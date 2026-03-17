@@ -1,30 +1,28 @@
 ---
-title: 自述
+title: 关于
 description: 这是一份站长的自述报告，请查收。
-comments: false
+comments: true
 ---
 
-## 关于 Gyoza
+👋这里是一杯为品。
 
-Gyoza 是一个使用 Astro 和 React 开发的博客主题。Gyoza 借鉴了 [Shiro](https://github.com/innei/Shiro) 和一些网站的设计。
+✍🏻致力于打造“大而美”的具身智能知识博客系列。
 
-Gyoza 的核心理念是简洁，快速，可爱。
+🌹更将探寻一切美的事物和人生精彩可能。
 
-- 在 [Markdown 示例](/posts/markdown) 中展示了 Markdown 的渲染样式
-- 可以前往 [Gyoza 使用指南](/posts/guide) 了解 Gyoza 的使用方法
+➡️更多关于我的故事，还请从博客深处寻找吧。
 
-Gyoza 是开源的，如果你对这个项目感兴趣，欢迎前往 Gyoza 的 [Github 仓库](https://github.com/lxchapu/astro-gyoza) 来提 Issue 或者 PR。
+🤔也许能帮助你快速认识我的MBTI标签：INTP-O-C（预言家，内向/直觉/思维/知觉-纠结-高冷）。
 
-## 关于作者
+🌐全平台账号：
 
-我是 lxchapu，是一名前端开发者，喜欢各种有趣的东西。欢迎访问我的个人网站 [www.lxchapu.com](https://www.lxchapu.com)，了解关于我更多的信息。
+- 微信公众号@一杯为品
+- 知乎@一杯为品
 
-## 致谢
+> 虽然但是所有账号发的内容都一样……不过微信公众号带给我的反馈更有活人感，所以博主会更重视一些。当然还是推荐收藏我的专属博客网站来获取更丰富的更新内容和更良好的浏览体验叭。
 
-感谢以下项目：
+📬 联系邮箱：inkemspace@foxmail.com
 
-- [Astro](https://astro.build/)
-- [React](https://reactjs.org/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Framer Motion](https://www.framer.com/motion/)
-- [Jotai](https://jotai.org/)
+☕如果我的博客对你有帮助，不妨请我喝杯咖啡吧~
+
+![](https://inkem-1306784622.cos.accelerate.myqcloud.com/blog/pic/%E5%85%AC%E5%91%8A.png)
