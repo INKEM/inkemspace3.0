@@ -14,7 +14,13 @@ const config: Config = {
         '"Segoe UI Symbol"',
         '"Noto Color Emoji"',
       ],
-      serif: ['"Noto Serif SC"', '"Source Han Serif SC"', '"Source Han Serif"', 'serif'],
+      serif: [
+        '"Early Summer Serif"',
+        '"Noto Serif SC"',
+        '"Source Han Serif SC"',
+        '"Source Han Serif"',
+        'serif',
+      ],
       mono: ['"JetBrains Mono"', '"Fira Code"', 'Consolas', 'monospace'],
     },
     fontSize: {
