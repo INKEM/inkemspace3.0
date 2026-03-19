@@ -63,7 +63,7 @@
 }
 
 .markdown pre {
-  @apply px-6 py-4 max-h-[450px] text-sm leading-relaxed overflow-auto;
+  @apply px-6 py-4 max-h-[450px] text-sm leading-relaxed overflow-auto max-w-full;
 }
 
 .markdown .table-wrapper {
@@ -71,7 +71,7 @@
 }
 
 .markdown table {
-  @apply w-auto mx-auto text-left table-auto text-sm;
+  @apply w-auto mx-auto text-left table-auto text-sm max-w-full;
 }
 
 .markdown tr {
@@ -88,15 +88,15 @@
 }
 
 .markdown img {
-  @apply rounded-lg bg-secondary min-h-[80px] min-w-[80px];
+  @apply rounded-lg bg-secondary min-h-[80px] min-w-[80px] max-w-full h-auto;
 }
 
 .markdown figure {
-  @apply mb-5 flex flex-col items-center;
+  @apply mb-5 flex flex-col items-center max-w-full;
 }
 
 .markdown figcaption {
-  @apply mt-3 text-secondary text-sm;
+  @apply mt-3 text-secondary text-sm max-w-full;
 }
 
 .markdown .heading-anchor {

@@ -33,7 +33,7 @@ export function PostCopyright({
     <section className="text-xs leading-loose text-secondary">
       <p>文章标题：{title}</p>
       <p>文章作者：{author.name}</p>
-      <p>
+      <p className="break-all">
         <span>文章链接：{url}</span>
         <span role="button" className="cursor-pointer select-none" onClick={handleCopyUrl}>
           [复制]
