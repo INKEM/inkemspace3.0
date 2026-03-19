@@ -15,7 +15,7 @@ const config: Config = {
         '"Noto Color Emoji"',
       ],
       serif: [
-        '"Early Summer Serif"',
+        // '"Early Summer Serif"',
         '"Noto Serif SC"',
         '"Source Han Serif SC"',
         '"Source Han Serif"',
