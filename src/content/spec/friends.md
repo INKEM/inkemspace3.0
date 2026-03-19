@@ -20,5 +20,5 @@ comments: true
 站点名称：一杯为品的博客
 站点描述：二杯三杯也无妨
 站点链接：https://www.inkem.space
-头像链接：https://www.inkem.space/assets/images/avatar.webp
+头像链接：https://www.inkem.space/images/avatar.webp
 ```
