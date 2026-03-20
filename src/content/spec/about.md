@@ -4,8 +4,6 @@ description: 这是我的自述报告，请查收。
 comments: true
 ---
 
-![](https://inkem-1306784622.cos.accelerate.myqcloud.com/blog/pic/IP%E5%BD%A2%E8%B1%A1.jpg)
-
 👋这里是一杯为品。
 
 ✍🏻致力于打造“大而美”的具身智能知识博客系列。
@@ -24,6 +22,10 @@ comments: true
 > 虽然但是所有账号发的内容都一样……不过微信公众号带给我的反馈更有活人感，所以博主会更重视一些。当然还是推荐收藏我的专属博客网站来获取更丰富的更新内容和更良好的浏览体验叭。
 
 📬 联系邮箱：inkemspace@foxmail.com
+
+个人形象设计稿：
+
+![](https://inkem-1306784622.cos.accelerate.myqcloud.com/blog/pic/IP%E5%BD%A2%E8%B1%A1.jpg)
 
 ☕如果我的博客对你有帮助，不妨请我喝杯咖啡吧~
 

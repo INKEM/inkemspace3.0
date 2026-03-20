@@ -1,6 +1,6 @@
 ---
 title: 友链
-description: 我的小伙伴们和一些有趣的站点。
+description: 我的朋友和我欣赏的创作者们。
 comments: true
 ---
 
