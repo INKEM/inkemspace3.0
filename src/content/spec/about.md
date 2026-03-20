@@ -1,8 +1,10 @@
 ---
 title: 关于
-description: 这是一份站长的自述报告，请查收。
+description: 这是我的自述报告，请查收。
 comments: true
 ---
+
+![](https://inkem-1306784622.cos.accelerate.myqcloud.com/blog/pic/IP%E5%BD%A2%E8%B1%A1.jpg)
 
 👋这里是一杯为品。
 
