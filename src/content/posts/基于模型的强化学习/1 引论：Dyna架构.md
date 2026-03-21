@@ -2,7 +2,7 @@
 title: 【基于模型的强化学习】#1 引论：Dyna架构
 date: 2025-12-17
 summary: 主动学习环境动力学模型的方法。
-tags: [Dyna, 引论]
+tags: [MBRL, Dyna, 引论]
 category: 基于模型的强化学习
 ---
 

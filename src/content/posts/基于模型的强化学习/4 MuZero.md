@@ -2,7 +2,7 @@
 title: 【基于模型的强化学习】#4 MuZero：专注决策的价值模型
 date: 2026-03-13
 summary: 不关心真实的环境状态，只关心对决策有用的信息。
-tags: [MuZero, AlphaZero, MCTS, PUTC, 蒙特卡洛树搜索]
+tags: [MBRL, MuZero, AlphaZero, MCTS, PUTC, 蒙特卡洛树搜索]
 category: 基于模型的强化学习
 ---
 
