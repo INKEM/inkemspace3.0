@@ -63,7 +63,7 @@ Isaac Gym 是 Nvidia 提供的刚体仿真和训练框架。
 
 下载地址：https://developer.nvidia.com/isaac-gym/download
 
-![|500](Pasted%20image%2020260327201114.png)
+![|500](https://inkem-1306784622.cos.accelerate.myqcloud.com/blog/pic/Pasted%20image%2020260327201114.png)
 
 解压后进入对应文件夹下的`isaacgym/python`目录进行安装：
 
@@ -95,7 +95,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib
 
 再次运行仿真示例即可成功：
 
-![|500](Pasted%20image%2020260327201645.png)
+![|500](https://inkem-1306784622.cos.accelerate.myqcloud.com/blog/pic/Pasted%20image%2020260327201645.png)
 
 永久解决方案需要修改虚拟环境的激活脚本，在`unitree-rl`虚拟环境下：
 
@@ -181,7 +181,7 @@ python legged_gym/scripts/train.py --task=go2 --num_envs=64
 
 运行成功后将跳出图形界面显示训练过程：
 
-![|500](Pasted%20image%2020260327204950.png)
+![|500](https://inkem-1306784622.cos.accelerate.myqcloud.com/blog/pic/Pasted%20image%2020260327204950.png)
 
 可以在命令中使用`--headless`禁用图形界面渲染，大大提高训练效率：
 
@@ -245,7 +245,7 @@ python legged_gym/scripts/play.py --task=go2
 
 只看截图就知道效果奇差无比，机器人要么向后撑着，要么向前蛄蛹一下趴地上：
 
-![|500](Pasted%20image%2020260328194141.png)
+![|500](https://inkem-1306784622.cos.accelerate.myqcloud.com/blog/pic/Pasted%20image%2020260328194141.png)
 
 影响训练效果的最直接的参数一方面为奖励项权重，另一方面为PPO算法的超参数，分别对应`legged_robot_config.py`中的`rewards`类和`algorithm`类：
 
