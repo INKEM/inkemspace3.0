@@ -1,7 +1,7 @@
 ---
 title: 【项目学习】Unitree RL GYM (Go2)（更新中）
 date: 2026-03-28
-lastMod: 2026-03-28
+lastMod: 2026-03-30
 summary: 基于 Unitree 机器人实现强化学习的示例仓库，以四足机器人 Go2 为例
 tags: [宇树, IsaacGym, 四足机器人, PPO]
 category: 项目学习
@@ -132,6 +132,56 @@ cd unitree_rl_gym
 pip install -e .
 ```
 
+## Auto DL
+
+Auto DL是一个云算力租赁平台，若手头显卡性能较差可以考虑租赁。
+
+**基础使用教程**
+
+::bilibili{#BV1s2YdzNESZ}
+
+Auto DL 的环境配置方法基本不变，本节以博主自身实践为例介绍在Auto DL上需要注意的几点。
+
+博主的租赁配置：
+
+- RTX4090 (24GB)×1；
+- 基础镜像：PyTorch 2.3.0 & Python 3.12 (Ubuntu 22.04) & CUDA 12.1
+
+Isaac Gym 安装包在本地下载，再拖到`/autodl-tmp`下，运行解压命令：
+
+```bash
+tar -zxvf 文件名.tar.gz
+```
+
+git 克隆如果遇到报错：
+
+```text
+fatal: unable to access 'https://github.com/leggedrobotics/rsl_rl.git/': GnuTLS recv error (-110): The TLS connection was non-properly terminated.
+```
+
+解决方法：
+
+```bash
+# 关闭 GnuTLS 的 SSL 验证（临时解决连接问题）
+git config --global http.sslVerify false
+```
+
+解决一段时间后博主又遇到报错：
+
+```text
+fatal: unable to access 'https://github.com/unitreerobotics/unitree_rl_gym.git/': Failed to connect to github.com port 443 after 129504 ms: Connection timed out
+```
+
+无奈只能本地在项目网站上直接下载 zip ，再拖到`/autodl-tmp`下，运行解压命令：
+
+```bash
+unzip 文件名.zip
+```
+
+训练时需要使用有卡模式开机。
+
+后续学习过程在 Auto DL 上的区别都会在相应步骤之后给出。
+
 # 试运行
 
 运行以下命令对`go2`四足机器人进行训练：
@@ -140,7 +190,13 @@ pip install -e .
 python legged_gym/scripts/train.py --task=go2
 ```
 
-CUDA内存分配失败报错：
+Auto DL 由于系统无图形化界面，训练需要使用`--headless`参数禁用图形渲染，这也能大大提高训练效率：
+
+```bash
+python legged_gym/scripts/train.py --task=go2 --headless
+```
+
+如果显卡性能不够，会有CUDA内存分配失败报错：
 
 ```
 RuntimeError: The following operation failed in the TorchScript interpreter.
@@ -155,7 +211,7 @@ Traceback of TorchScript (most recent call last):
 RuntimeError: CUDA error: CUBLAS_STATUS_ALLOC_FAILED when calling `cublasCreate(handle)`
 ```
 
-因为博主用的显卡太垃圾了，需要减少并行训练的环境数量，在`legged_robot_config.py`中修改：
+此时可以尝试减少并行训练的环境数量，在`legged_robot_config.py`中修改：
 
 _注释中将使用_`[*]`_对修改位置在代码中的原始行数进行必要的标记。_
 
@@ -179,15 +235,9 @@ class LeggedRobotCfg(BaseConfig):
 python legged_gym/scripts/train.py --task=go2 --num_envs=64
 ```
 
-运行成功后将跳出图形界面显示训练过程：
+运行成功后，如果没有禁用图形渲染，将跳出图形界面显示训练过程：
 
 ![|500](https://inkem-1306784622.cos.accelerate.myqcloud.com/blog/pic/Pasted%20image%2020260327204950.png)
-
-可以在命令中使用`--headless`禁用图形界面渲染，大大提高训练效率：
-
-```bash
-python legged_gym/scripts/train.py --task=go2 --headless
-```
 
 运行训练的终端将对每次迭代更新显示训练数据，以下是博主第一轮训练最后一次迭代前的训练数据：
 
@@ -243,56 +293,137 @@ ETA: 1.7s
 python legged_gym/scripts/play.py --task=go2
 ```
 
-只看截图就知道效果奇差无比，机器人要么向后撑着，要么向前蛄蛹一下趴地上：
+博主的 RTX 2050 只能跑 64 个并行环境，一轮训练几乎看不到效果，机器人要么向后撑着，要么向前蛄蛹一下趴地上：
 
 ![|500](https://inkem-1306784622.cos.accelerate.myqcloud.com/blog/pic/Pasted%20image%2020260328194141.png)
 
-影响训练效果的最直接的参数一方面为奖励项权重，另一方面为PPO算法的超参数，分别对应`legged_robot_config.py`中的`rewards`类和`algorithm`类：
+而 Auto DL 上可以跑满 4096 个并行环境，一轮训练效果明显，就是机器人是斜着走的：
 
-```python
-# [101]
-class rewards:
-	class scales:
-		termination = -10.0
-		tracking_lin_vel = 1.0
-		tracking_ang_vel = 0.5
-		lin_vel_z = -2.0
-		ang_vel_xy = -0.05
-		orientation = 1.0
-		torques = -0.00001
-		dof_vel = -0.
-		dof_acc = -2.5e-7
-		base_height = -1.0
-		feet_air_time = 0.5
-		collision = -0.5
-		feet_stumble = -0.
-		action_rate = -0.01
-		stand_still = -0.
-	only_positive_rewards = False # if true negative total rewards are clipped at zero (avoids early termination problems)
-	tracking_sigma = 0.25 # tracking reward = exp(-error^2/sigma)
-	soft_dof_pos_limit = 1. # percentage of urdf limits, values above this limit are penalized
-	soft_dof_vel_limit = 1.
-	soft_torque_limit = 1.
-	base_height_target = 0.25
-	max_contact_force = 100.
+<video controls width="800" preload="metadata">
+  <source src="https://inkem-1306784622.cos.accelerate.myqcloud.com/blog/pic/output.mp4" type="video/mp4">
+  您的浏览器不支持视频播放。
+</video>
 
-# [186]
-class algorithm:
-	# training params
-	value_loss_coef = 1.0
-	use_clipped_value_loss = True
-	clip_param = 0.2
-	entropy_coef = 0.012
-	num_learning_epochs = 5
-	num_mini_batches = 8 # mini batch size = num_envs*nsteps / nminibatches
-	learning_rate = 1.e-3 #5.e-4
-	schedule = 'adaptive' # could be adaptive, fixed
-	gamma = 0.99
-	lam = 0.95
-	desired_kl = 0.01
-	max_grad_norm = 1.
+Auto DL 无图形化界面，训练效果的查看方法详见**训练-训练效果**一节。
+
+# 训练
+
+接下来我们引入更多的训练参数，实现更灵活的训练过程。
+
+官方文档给出的参数说明如下：
+
+- `--task`：必选参数，值可选（go2, g1, h1, h1_2）；
+- `--headless`：默认启动图形界面，设为 true 时不渲染图形界面（效率更高）；
+- `--resume`：从日志中选择 checkpoint 继续训练；
+- `--experiment_name`：运行/加载的 experiment 名称；
+- `--run_name`：运行/加载的 run 名称；
+- `--load_run`：加载运行的名称，默认加载最后一次运行；
+- `--checkpoint`：checkpoint 编号，默认加载最新一次文件；
+- `--num_envs`：并行训练的环境个数；
+- `--seed`：随机种子；
+- `--max_iterations`：训练的最大迭代次数；
+- `--sim_device`：仿真计算设备，指定 CPU 为 `--sim_device=cpu`；
+- `--rl_device`：强化学习计算设备，指定 CPU 为 `--rl_device=cpu`。
+
+## 训练的保存与加载
+
+每次运行训练时，默认情况下，训练过程都会保存在`logs/<experiment_name>/<date_time>_<run_name>/model_<checkpoint>.pt`，其中
+
+- `experiment_name`：实验名称，go2 机器人默认为`rough_go2`，通过`--experiment_name`可以自定义实验名称；
+  - 用于定义实验主题，例如区分不同的训练任务（平地行走/崎岖地形/爬楼梯）。
+- `date_time`：训练开始的时间，例如3月29日16时06分46秒为`Mar29_16-06-46`；
+- `run_name`：运行名称，默认为空，通过`--run_name`可以给定运行名称；
+  - 在每个实验主题下，区分不同超参数或配置的训练尝试。
+- `checkpoint`：检查点，训练过程每 50 次迭代保存一次模型参数。
+
+启动一次新训练时，我们可以通过`--experiment_name`和`--run_name`区分这次训练：
+
+```bash
+python legged_gym/scripts/train.py --task=go2 --experiment_name=exp1 --run_name=run1
 ```
 
-接下来是博主漫长的调参数炼丹时间……
+从某一次训练中的模型参数加载时：
 
-未完待续
+- `--resume`：声明训练从检查点加载；
+- `--experiment_name`：指定训练所在的实验文件夹；
+- `--load_run`：指定具体的训练，需要给出完整的`<date_time>_<run_name>`；
+- `--checkpoint`：指定模型检查点；
+- `--run_name`：不会继承，需要重新命名。
+
+```bash
+python legged_gym/scripts/train.py --task=go2 --resume --experiment_name=exp1 --load_run=Mar29_16-46-08_run1 --checkpoint=500 --run_name=run2
+```
+
+不指定`--load_run`和`--checkpoint`则默认加载最新的一次训练及训练中最新的模型。
+
+> [!bug]
+>
+> - 如果所加载的训练没有迭代到最大次数就停止（例如`Ctrl+C`中断），则无论是否保存过模型参数，加载后的训练迭代次数不会保留；
+> - 在迭代次数被正常保留的情况下，终端显示的预计剩余时间`ETA`会变为负数。
+
+## 训练的配置
+
+部分配置可以通过命令行参数临时调整：
+
+- `--num_envs`：并行训练的环境个数；
+- `--seed`：训练使用的随机数种子；
+- `--max_iteration`：单次训练的最大迭代次数。
+
+其他配置，例如奖励权重和PPO超参数等，则需在代码中修改后再启动训练。
+
+## 训练的设备
+
+- `--sim_device`：仿真计算设备，默认为GPU，指定 CPU 为 `--sim_device=cpu`；
+- `--rl_device`：强化学习计算设备，默认为GPU，指定 CPU 为 `--rl_device=cpu`。
+
+## 训练效果
+
+运行`play.py`可查看训练效果：
+
+```bash
+python legged_gym/scripts/play.py --task=go2
+```
+
+指定模型的参数包括`--experiment` `--load_run` `--checkpoint`，用法与运行训练的命令相同。
+
+由此，Auto DL 的模型则可以通过下载到本地，并存放于与 Auto DL 中一致的路径下后，在本地运行训练效果。
+
+## 训练可视化
+
+TensorBoard 是 TensorFlow 提供的可视化工具包，用于机器学习实验。使用如下命令安装：
+
+```bash
+conda install tensorboard
+```
+
+于仓库文件夹`unitree_rl_gym`下打开另一个终端，运行如下命令可以使用 TensorBoard 工具将日志文件夹中的训练过程可视化：
+
+```bash
+tensorboard --logdir=logs
+```
+
+进入终端输出的网址：
+
+```text
+TensorBoard 2.20.0 at http://localhost:6006/ (Press CTRL+C to quit)
+```
+
+![](https://inkem-1306784622.cos.accelerate.myqcloud.com/blog/pic/Pasted%20image%2020260329171203.png)
+
+左侧边栏勾选要可视化的训练，中间的分类展示了不同数据指标：
+
+- **Episode**：机器人的具体表现，包括各个奖励项；
+- **Loss**：神经网络的学习过程，包括学习率和损失函数；
+- **Perf**：训练过程的运行效率，包括数据收集和网络更新的占用时间和环境模拟帧数；
+- **Policy**：策略输出指标，包括输出动作的标准差；
+- **Train**：训练的综合效果，包括平均总奖励和平均回合长度。
+
+---
+
+Auto DL 的自定义服务功能可以在本地访问租赁主机的 6006 和 6008 端口，TensorBoard 默认在 6006 端口运行，也可通过`--port`参数配置：
+
+```bash
+tensorboard --logdir=logs --port=6006
+```
+
+![](https://inkem-1306784622.cos.accelerate.myqcloud.com/blog/pic/Pasted%20image%2020260329212855.png)
