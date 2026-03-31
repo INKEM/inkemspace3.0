@@ -9,6 +9,16 @@ category: 项目学习
 
 项目地址：https://github.com/unitreerobotics/unitree_rl_gym
 
+标注说明：
+
+- 正文
+  - _配图_：博主最终会在这里补充配图。
+  - ⚠️：需要注意的内容，否则可能会在后面遇到困惑。
+- 代码块注释
+  - 🔍：提示在项目编辑器中找到对应代码段可以搜索的关键词，熟练地使用搜索功能对阅读和分析项目很有帮助。
+  - 📃：给出代码段所在代码文件。
+  - `[*]`：在必要的地方指引代码段在原始代码文件中的行数。
+
 # 环境配置
 
 参考文档：https://github.com/unitreerobotics/unitree_rl_gym/blob/main/doc/setup_zh.md
@@ -211,11 +221,11 @@ Traceback of TorchScript (most recent call last):
 RuntimeError: CUDA error: CUBLAS_STATUS_ALLOC_FAILED when calling `cublasCreate(handle)`
 ```
 
-此时可以尝试减少并行训练的环境数量，在`legged_robot_config.py`中修改：
-
-_注释中将使用_`[*]`_对修改位置在代码中的原始行数进行必要的标记。_
+此时可以尝试减少并行训练的环境数量：
 
 ```python
+# 🔍num_envs, envs
+# 📃legged_robot_config.py
 class LeggedRobotCfg(BaseConfig):
 	class env:
 		# [5]训练环境数量由4096改成64
@@ -266,7 +276,7 @@ Mean episode rew_collision: -0.0315
 Mean episode rew_dof_acc: -0.3668
 关节限位惩罚
 Mean episode rew_dof_pos_limits: -0.1940
-足端腾空时间惩罚?
+足端腾空时间惩罚
 Mean episode rew_feet_air_time: -0.0755
 垂直方向速度惩罚
 Mean episode rew_lin_vel_z: -0.0611
@@ -293,11 +303,11 @@ ETA: 1.7s
 python legged_gym/scripts/play.py --task=go2
 ```
 
-博主的 RTX 2050 只能跑 64 个并行环境，一轮训练几乎看不到效果，机器人要么向后撑着，要么向前蛄蛹一下趴地上：
+博主的 RTX 2050 只能跑 64 个环境，一轮训练几乎看不到效果，机器人要么向后撑着，要么向前蛄蛹一下趴地上：
 
 ![|500](https://inkem-1306784622.cos.accelerate.myqcloud.com/blog/pic/Pasted%20image%2020260328194141.png)
 
-而 Auto DL 上可以跑满 4096 个并行环境，一轮训练效果明显，就是机器人是斜着走的：
+而 Auto DL 上可以跑满 4096 个环境，一轮训练效果明显，就是机器人是斜着走的：
 
 <video controls width="800" preload="metadata">
   <source src="https://inkem-1306784622.cos.accelerate.myqcloud.com/blog/pic/output.mp4" type="video/mp4">
@@ -390,13 +400,13 @@ python legged_gym/scripts/play.py --task=go2
 
 ## 训练可视化
 
-TensorBoard 是 TensorFlow 提供的可视化工具包，用于机器学习实验。使用如下命令安装：
+TensorBoard 是 TensorFlow 提供的可视化工具包，用于机器学习实验。在`unitree-rl`虚拟环境中使用如下命令安装：
 
 ```bash
 conda install tensorboard
 ```
 
-于仓库文件夹`unitree_rl_gym`下打开另一个终端，运行如下命令可以使用 TensorBoard 工具将日志文件夹中的训练过程可视化：
+于仓库文件夹`unitree_rl_gym`下打开终端，运行如下命令可以使用 TensorBoard 工具将日志文件夹中的训练过程可视化：
 
 ```bash
 tensorboard --logdir=logs
@@ -427,3 +437,327 @@ tensorboard --logdir=logs --port=6006
 ```
 
 ![](https://inkem-1306784622.cos.accelerate.myqcloud.com/blog/pic/Pasted%20image%2020260329212855.png)
+
+# 奖励函数
+
+所有与奖励函数相关的配置参数：
+
+```python
+# 🔍reward
+# 📃legged_robot_config.py
+# [101]
+class rewards:
+    class scales:
+        termination = -0.0
+        tracking_lin_vel = 1.0
+        tracking_ang_vel = 0.5
+        lin_vel_z = -2.0
+        ang_vel_xy = -0.05
+        orientation = -0.
+        torques = -0.00001
+        dof_vel = -0.
+        dof_acc = -2.5e-7
+        base_height = -0.
+        feet_air_time =  1.0
+        collision = -1.
+        feet_stumble = -0.0
+        action_rate = -0.01
+        stand_still = -0.
+
+    only_positive_rewards = True # if true negative total rewards are clipped at zero (avoids early termination problems)
+    tracking_sigma = 0.25 # tracking reward = exp(-error^2/sigma)
+    soft_dof_pos_limit = 1. # percentage of urdf limits, values above this limit are penalized
+    soft_dof_vel_limit = 1.
+    soft_torque_limit = 1.
+    base_height_target = 1.
+    max_contact_force = 100. # forces above this value are penalized
+```
+
+定义了各奖励项计算方法的奖励函数：
+
+```python
+# 🔍reward
+# 📃legged_robot.py
+# [636]
+#------------ reward functions----------------
+def _reward_lin_vel_z(self):
+    # Penalize z axis base linear velocity
+    return torch.square(self.base_lin_vel[:, 2])
+
+def _reward_ang_vel_xy(self):
+    # Penalize xy axes base angular velocity
+    return torch.sum(torch.square(self.base_ang_vel[:, :2]), dim=1)
+
+def _reward_orientation(self):
+    # Penalize non flat base orientation
+    return torch.sum(torch.square(self.projected_gravity[:, :2]), dim=1)
+
+# ...
+```
+
+⚠️所有的奖励函数都返回一个形状为`[num_envs(环境数量)]`的一维张量，存储每个环境各自结算的奖励项。
+
+## 任务目标奖励
+
+```python
+# [693]
+def _reward_tracking_lin_vel(self):
+    # Tracking of linear velocity commands (xy axes)
+    lin_vel_error = torch.sum(torch.square(self.commands[:, :2] - self.base_lin_vel[:, :2]), dim=1)
+    return torch.exp(-lin_vel_error/self.cfg.rewards.tracking_sigma)
+```
+
+**线速度跟踪奖励**奖励机器人基座在$XY$平面的实际线速度$\mathbf v_{b,xy}$跟踪指令线速度$\mathbf v^*_{b,xy}$的表现，提升足式机器人的平移能力。
+
+$$
+\exp(-\frac{\|\mathbf v^*_{b,xy}-\mathbf v_{b,xy}\|^2}\sigma)
+$$
+
+$\sigma$决定了奖励如何随跟踪误差衰减，对应参数`tracking_sigma`。$\sigma$越小，奖励曲线越陡峭，微小误差越能大幅降低奖励，相当于对跟踪误差的容忍度降低了。
+
+```python
+# [698]
+def _reward_tracking_ang_vel(self):
+    # Tracking of angular velocity commands (yaw)
+    ang_vel_error = torch.square(self.commands[:, 2] - self.base_ang_vel[:, 2])
+    return torch.exp(-ang_vel_error/self.cfg.rewards.tracking_sigma)
+```
+
+**角速度跟踪奖励**奖励机器人基座绕$Z$轴的实际角速度$\boldsymbol\omega_{b,z}$跟踪指令角速度$\boldsymbol\omega^*_{b,z}$的表现，提升足式机器人的转向能力。
+
+$$
+\exp(-\frac{\|\boldsymbol\omega^*_{b,z}-\boldsymbol\omega_{b,z}\|^2}\sigma)
+$$
+
+## 运动稳定性与能耗惩罚
+
+```python
+# [637]
+def _reward_lin_vel_z(self):
+    # Penalize z axis base linear velocity
+    return torch.square(self.base_lin_vel[:, 2])
+```
+
+**线速度惩罚**$-\mathbf v_{b,z}^2$惩罚机器人基座在$Z$轴方向的线速度，保持基座高度稳定，抑制不必要的跳跃或下沉。
+
+```python
+# [641]
+def _reward_ang_vel_xy(self):
+    # Penalize xy axes base angular velocity
+    return torch.sum(torch.square(self.base_ang_vel[:, :2]), dim=1)
+```
+
+**角速度惩罚**$-||\boldsymbol\omega_{b,xy}||^2$惩罚机器人基座绕$X$轴和$Y$轴的角速度，保持基座姿态稳定，抑制侧翻与前后倾。
+
+```python
+# [645]
+def _reward_orientation(self):
+    # Penalize non flat base orientation
+    return torch.sum(torch.square(self.projected_gravity[:, :2]), dim=1)
+```
+
+**姿态惩罚**$-\|\mathbf g_{\mathrm{project}}\|^2$惩罚机器人重力向量在基座坐标系$XY$维度下的投影。相比角速度惩罚，姿态惩罚直接惩罚基座姿态倾斜的角度。
+
+_配图_
+
+同时惩罚角速度和角度是控制理论中 PD 控制在奖励函数中的体现，能够让机器人快速回正且抑制震荡。
+
+```python
+# [649]
+def _reward_base_height(self):
+    # Penalize base height away from target
+    base_height = self.root_states[:, 2]
+    return torch.square(base_height - self.cfg.rewards.base_height_target)
+```
+
+**高度惩罚**$-(h_b-h^*_b)^2$惩罚机器人基座高度偏离目标值，期望基座保持在理想的工作高度，因具体任务和训练效果选择性设置。
+
+```python
+# [654]
+def _reward_torques(self):
+    # Penalize torques
+    return torch.sum(torch.square(self.torques), dim=1)
+```
+
+**力矩惩罚**$-\|\boldsymbol\tau\|^2$惩罚关节力矩过大，鼓励节能和低功耗运动。
+
+```python
+# [658]
+def _reward_dof_vel(self):
+    # Penalize dof velocities
+    return torch.sum(torch.square(self.dof_vel), dim=1)
+```
+
+**速度惩罚**$-\|\dot{\mathbf p}\|^2$惩罚关节速度过大，鼓励平缓运动。
+
+```python
+# [662]
+def _reward_dof_acc(self):
+    # Penalize dof accelerations
+    return torch.sum(torch.square((self.last_dof_vel - self.dof_vel) / self.dt), dim=1)
+```
+
+**加速度惩罚**$-\|(\dot{\mathbf p}_{t-\Delta t}-\dot{\mathbf p}_t)/\Delta t\|^2$惩罚关节加速度（通过相邻仿真时间步的关节速度差计算）过大，进一步鼓励平缓运动，减少冲击。
+
+力矩惩罚和加速度惩罚具有相关性，但力矩惩罚还考虑了静载荷（重力）与摩擦等因素，更注重减少过载与能耗。
+
+```python
+# [666]
+def _reward_action_rate(self):
+    # Penalize changes in actions
+    return torch.sum(torch.square(self.last_actions - self.actions), dim=1)
+```
+
+**动作变化率惩罚**$-\|\mathbf a_{t-1}-\mathbf a_t\|^2$从神经网络层面，惩罚其相邻决策时间步输出的动作空间指令。
+
+动作空间往往是关节位置空间，因此动作变化率惩罚和速度、加速度惩罚也具有相关性。但出于计算性能的限制，神经网络的决策时间步通常大于执行器的执行时间步（仿真时间步），故执行器具体的执行效果在神经网络的观测中存在盲区，加速度惩罚则从更细的粒度上弥补了这一点。
+
+除此之外，动作变化率惩罚通过鼓励神经网络学到平滑的策略，避免过大的梯度，对训练稳定性也起到重要作用。
+
+## 物理安全与限制惩罚
+
+```python
+# [670]
+def _reward_collision(self):
+    # Penalize collisions on selected bodies
+    return torch.sum(1.*(torch.norm(self.contact_forces[:, self.penalised_contact_indices, :], dim=-1) > 0.1), dim=1)
+```
+
+**碰撞惩罚**惩罚非足端部位的碰撞次数。
+
+⚠️碰撞次数的统计通过计算接触力实现：
+
+1. `self.contact_forces`：一个三维张量`[num_envs, num_bodies(机器人刚体数量), 3]`，存储每个环境（机器人）的每个刚体的接触力在$XYZ$三个方向的分量；
+2. `self.penalised_contact_indices`：存储并筛选所有需要惩罚碰撞的刚体索引；
+3. `torch.norm`：计算接触力的大小；
+4. `> 0.1`：判断是否接触，阈值`0.1`排除传感器噪声和数值误差等影响；
+5. `1.`：将布尔值`True`和`False`转化为`1`和`0`；
+6. `torch.sum`：对每个环境中判定为碰撞的刚体数量分别求和。
+
+```python
+# [674]
+def _reward_termination(self):
+    # Terminal reward / penalty
+    return self.reset_buf * ~self.time_out_buf
+```
+
+**终止惩罚**惩罚环境触发提前终止的次数，具体机制与终止条件的判断有关：
+
+```python
+# 🔍reset_buf, time_out_buf
+# 📃legged_robot.py
+# [118]
+def check_termination(self):
+    """ Check if environments need to be reset
+    """
+    self.reset_buf = torch.any(torch.norm(self.contact_forces[:, self.termination_contact_indices, :], dim=-1) > 1., dim=1)
+    self.reset_buf |= torch.logical_or(torch.abs(self.rpy[:,1])>1.0, torch.abs(self.rpy[:,0])>0.8)
+    self.time_out_buf = self.episode_length_buf > self.max_episode_length # no terminal reward for time-outs
+    self.reset_buf |= self.time_out_buf
+```
+
+对每个环境，布尔张量`self.reset_buf`判断其是否触发任意终止条件，`time_out_buf`判断其是否触发超时终止条件（到达单次迭代时间限制）。
+
+除了超时，终止条件还有：
+
+- 接触力超过`1`的严重碰撞。
+- 姿态严重倾斜（前倾/后仰超过约$57^\circ$或侧倾超过约$46^\circ$）。
+  - `self.rpy`形状为`[num_envs, 3]`，以弧度制存储每个环境机器人的横滚角（绕$X$轴）、俯仰角（绕$Y$轴）和转向角（绕$Z$轴）。
+
+_配图_
+
+```python
+# [678]
+def _reward_dof_pos_limits(self):
+    # Penalize dof positions too close to the limit
+    out_of_limits = -(self.dof_pos - self.dof_pos_limits[:, 0]).clip(max=0.) # lower limit
+    out_of_limits += (self.dof_pos - self.dof_pos_limits[:, 1]).clip(min=0.)
+    return torch.sum(out_of_limits, dim=1)
+```
+
+**关节限位惩罚**惩罚关节位置超出软限位的大小。
+
+软限位是软件设置的限位，比物理硬件限位更严格，以留出惩罚作用幅度的余量。
+
+```python
+# [684]
+def _reward_dof_vel_limits(self):
+    # Penalize dof velocities too close to the limit
+    # clip to max error = 1 rad/s per joint to avoid huge penalties
+    return torch.sum((torch.abs(self.dof_vel) - self.dof_vel_limits*self.cfg.rewards.soft_dof_vel_limit).clip(min=0., max=1.), dim=1)
+```
+
+**关节速度限制惩罚**惩罚关节速度超出软限位的大小，但单个关节的最大惩罚截断为$1$。
+
+因为位置（以及后文的力矩）在仿真器和硬件处理中都自带截断逻辑，但速度理论上可以无限增加（仿真器中），故需要在奖励计算时截断。过大的速度会导致仿真策略应用到实物因为摩擦力和空气阻力等而失效，同时避免速度惩罚过大，淹没其他奖励信号，甚至产生数值爆炸。
+
+```python
+# [689]
+def _reward_torque_limits(self):
+    # penalize torques too close to the limit
+    return torch.sum((torch.abs(self.torques) - self.torque_limits*self.cfg.rewards.soft_torque_limit).clip(min=0.), dim=1)
+```
+
+**关节力矩限制惩罚**惩罚关节力矩超出软限位的大小。
+
+在速度惩罚和力矩惩罚的基础上，速度限制惩罚和力矩限制惩罚的作用在于进一步平衡奖惩机制，防止策略为了更高的任务奖励而牺牲安全性，对于超出安全边界的情况加大惩罚力度。
+
+_未完待续_
+
+## 步态与行为风格
+
+```python
+def _reward_feet_air_time(self):
+    # Reward long steps
+    # Need to filter the contacts because the contact reporting of PhysX is unreliable on meshes
+    contact = self.contact_forces[:, self.feet_indices, 2] > 1.
+    contact_filt = torch.logical_or(contact, self.last_contacts)
+    self.last_contacts = contact
+    first_contact = (self.feet_air_time > 0.) * contact_filt
+    self.feet_air_time += self.dt
+    rew_airTime = torch.sum((self.feet_air_time - 0.5) * first_contact, dim=1) # reward only on first contact with the ground
+    rew_airTime *= torch.norm(self.commands[:, :2], dim=1) > 0.1 #no reward for zero command
+    self.feet_air_time *= ~contact_filt
+    return rew_airTime
+```
+
+```python
+def _reward_stumble(self):
+    # Penalize feet hitting vertical surfaces
+    return torch.any(torch.norm(self.contact_forces[:, self.feet_indices, :2], dim=2) >\
+        5 *torch.abs(self.contact_forces[:, self.feet_indices, 2]), dim=1)
+```
+
+```python
+def _reward_stand_still(self):
+    # Penalize motion at zero commands
+    return torch.sum(torch.abs(self.dof_pos - self.default_dof_pos), dim=1) * (torch.norm(self.commands[:, :2], dim=1) < 0.1)
+```
+
+```python
+def _reward_feet_contact_forces(self):
+    # penalize high contact forces
+    return torch.sum((torch.norm(self.contact_forces[:, self.feet_indices, :], dim=-1) - self.cfg.rewards.max_contact_force).clip(min=0.), dim=1)
+```
+
+# 观测空间
+
+# PPO超参数
+
+```python
+# [186]
+class algorithm:
+	# training params
+	value_loss_coef = 1.0
+	use_clipped_value_loss = True
+	clip_param = 0.2
+	entropy_coef = 0.012
+	num_learning_epochs = 5
+	num_mini_batches = 8 # mini batch size = num_envs*nsteps / nminibatches
+	learning_rate = 1.e-3 #5.e-4
+	schedule = 'adaptive' # could be adaptive, fixed
+	gamma = 0.99
+	lam = 0.95
+	desired_kl = 0.01
+	max_grad_norm = 1.
+```
