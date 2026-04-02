@@ -1,5 +1,5 @@
 ---
-title: 【项目学习】Unitree RL GYM (Go2)（04.01更新）
+title: 【项目学习】Unitree RL GYM (Go2)（04.02更新观测空间）
 date: 2026-03-28
 lastMod: 2026-04-01
 summary: 基于 Unitree 机器人实现强化学习的示例仓库，以四足机器人 Go2 为例
