@@ -12,21 +12,26 @@ category: 项目学习
 标注说明：
 
 - 正文
-  - _配图_：博主最终会在这里补充配图。
+  - _配图/待补充_：博主后续更新才会在这里补充配图或正文。
   - ⚠️：需要注意的内容，否则可能会在后面遇到困惑。
-  - 🐞：博主暂未解决的，可能是项目bug的问题。
-- 代码块注释
-  - 🔍：提示在项目编辑器中找到对应代码段可以搜索的关键词。
-  - 📌：提示通过“转到定义”明确对应变量或函数的含义。
+  - 🐞：博主暂未解决的，可能是项目bug的问题，或者博主暂时无法解释的部分。
+- 🔍代码定位（VSCode编辑器）
+  - `...`：提示定位对应代码可以搜索的关键词。
+  - 📌：提示定位对应代码可以右键使用“转到定义”的变量或函数，通常接续上一个展示的代码块。
+  - `"..."`：提示定位对应代码可以右键使用“查找所有引用”的变量或函数，通常接续上一个展示的代码块。
+  - `→`：需要通过多次操作中转才能定位对应代码。
   - 📃：给出代码段所在代码文件。
-  - `[*]`：在必要的地方指引代码段在原始代码文件中的行数。
-  - `(*)`：将在代码块之后以正文形式补充讲解。
+- 代码注释
+  - `[*]...`：在必要的地方指引代码段在原始代码文件中的行数。
+  - `(*)...`：将在代码块之后以正文形式补充讲解。
+  - `(a, ..., b)`：一维张量的元素。
+  - `[a, ..., b]`：n维张量的形状。
 
 # 环境配置
 
 参考文档：https://github.com/unitreerobotics/unitree_rl_gym/blob/main/doc/setup_zh.md
 
-系统要求（博主配置）：
+系统要求（博主本地配置）：
 
 - 系统：Ubuntu 18.04 及以上（Ubuntu 22.04）
 - 显卡：Nvidia 显卡（RTX 2050，4GB显存）
@@ -227,8 +232,8 @@ RuntimeError: CUDA error: CUBLAS_STATUS_ALLOC_FAILED when calling `cublasCreate(
 此时可以尝试减少并行训练的环境数量：
 
 ```python
-# 🔍num_envs, envs
-# 📃legged_robot_config.py
+# 🔍 num_envs
+# 📃 legged_robot_config.py
 class LeggedRobotCfg(BaseConfig):
 	class env:
 		# [5]训练环境数量由4096改成64
@@ -319,7 +324,7 @@ python legged_gym/scripts/play.py --task=go2
 
 Auto DL 无图形化界面，训练效果的查看方法详见**训练-训练效果**一节。
 
-# 训练
+# 训练操作
 
 接下来我们引入更多的训练参数，实现更灵活的训练过程。
 
@@ -382,7 +387,7 @@ python legged_gym/scripts/train.py --task=go2 --resume --experiment_name=exp1 --
 - `--seed`：训练使用的随机数种子；
 - `--max_iteration`：单次训练的最大迭代回合数。
 
-其他配置，例如奖励权重和PPO超参数等，则需在代码中修改后再启动训练。
+其他配置，例如奖励缩放因子和PPO超参数等，则需在代码中修改后再启动训练。
 
 ## 训练的设备
 
@@ -443,13 +448,14 @@ tensorboard --logdir=logs --port=6006
 
 # 奖励
 
-所有与奖励相关的配置参数：
+`rewards`类定义了所有与奖励相关的配置参数：
 
 ```python
-# 🔍reward
-# 📃legged_robot_config.py
+# 🔍 reward
+# 📃 legged_robot_config.py
 # [101]
 class rewards:
+	# 所有奖励函数的缩放因子
     class scales:
         termination = -0.0
         tracking_lin_vel = 1.0
@@ -479,8 +485,8 @@ class rewards:
 定义了各奖励项计算方法的奖励函数：
 
 ```python
-# 🔍reward
-# 📃legged_robot.py
+# 🔍 reward/任意奖励函数缩放因子名
+# 📃 legged_robot.py
 # [636]
 #------------ reward functions----------------
 def _reward_lin_vel_z(self):
@@ -498,11 +504,15 @@ def _reward_orientation(self):
 # ...
 ```
 
-⚠️所有的奖励函数都返回一个形状为`[num_envs（环境数量）]`的一维张量，存储每个环境各自结算的奖励项。
+⚠️ 所有的奖励函数都返回一个形状为`[num_envs（环境数量）]`的一维张量，存储每个环境各自结算的奖励项。
 
-奖励在数学上默认包含正负两种情况，而奖励项的作用具体是激励还是惩罚在代码中由`scales`权重类处理，函数内部一概返回正奖励值。为了便于理解，对于给予负权重的奖励项，博主将直接称呼其为惩罚以做区分。
+⚠️ 可以发现，`legged_robot.py`定义了强化学习环境具体的运行逻辑，而`legged_robot_config.py`是调整`legged_robot.py`运行参数的配置接口，是所有机器人训练的通用模板。`\envs`目录下分目录存储了所有机器人型号各自的`env`和`config`文件，它们继承自`legged_robot`文件，为训练专门的机器人型号做了特定的适配。`go2`的环境直接使用`legged_robot.py`，无需单独的`env`文件。
 
-## 任务目标奖励
+## 奖励函数
+
+奖励在数学上默认包含正负两种情况，而奖励项的作用具体是激励还是惩罚在代码中由`scales`类处理，函数内部一概返回正奖励值。为了便于理解，对于给予负缩放因子的奖励项，博主将直接称呼其为惩罚以做区分。
+
+### 任务目标奖励
 
 ```python
 # [693]
@@ -536,7 +546,7 @@ $$
 \exp(-\frac{\|\boldsymbol\omega^*_{b,z}-\boldsymbol\omega_{b,z}\|^2}\sigma)
 $$
 
-## 运动稳定性与能耗惩罚
+### 运动稳定性与能耗惩罚
 
 ```python
 # [637]
@@ -621,7 +631,7 @@ def _reward_action_rate(self):
 
 除此之外，动作变化率惩罚通过鼓励神经网络学到平滑的策略，避免过大的梯度，对训练稳定性也起到重要作用。
 
-## 物理安全与限制惩罚
+### 物理安全与限制惩罚
 
 ```python
 # [670]
@@ -648,11 +658,11 @@ def _reward_termination(self):
     return self.reset_buf * ~self.time_out_buf
 ```
 
-**终止惩罚**惩罚环境触发提前终止的次数，具体机制与终止条件的判断有关：
+**终止惩罚**惩罚环境触发提前终止的次数，具体机制与终止条件的判断函数`check_termination()`有关：
 
 ```python
-# 🔍reset_buf, time_out_buf
-# 📃legged_robot.py
+# 🔍 "reset_buf"/"time_out_buf"
+# 📃 legged_robot.py
 # [118]
 def check_termination(self):
     """ Check if environments need to be reset
@@ -669,7 +679,7 @@ def check_termination(self):
 
 - 接触力超过`1`的严重碰撞。
 - 姿态严重倾斜（前倾/后仰超过约57°或侧倾超过约46°）。
-  - `self.rpy`形状为`[num_envs, 3]`，以弧度制存储每个环境机器人的横滚角、俯仰角和转向角。
+  - `self.rpy`形状为`[num_envs, 3]`，以弧度制存储每个环境机器人的**横滚角**（Roll）、**俯仰角**（Pitch）和**转向角**（Yaw）。
 
 _配图_
 
@@ -709,7 +719,7 @@ def _reward_torque_limits(self):
 
 在速度惩罚和力矩惩罚的基础上，速度限制惩罚和力矩限制惩罚的作用在于进一步平衡奖惩机制，防止策略为了更高的任务奖励而牺牲安全性，对于超出安全边界的情况加大惩罚力度。
 
-## 步态与行为风格
+### 步态与行为风格
 
 ```python
 # [703]
@@ -769,18 +779,19 @@ def _reward_feet_contact_forces(self):
 `_prepare_reward_function()`是奖励的初始化函数，用于动态构建奖励函数列表并进行预处理：
 
 ```python
-# 📃legged_robot.py
+# 🔍 reward
+# 📃 legged_robot.py
 # [485]
 def _prepare_reward_function(self):
 	""" Prepares a list of reward functions, whcih will be called to compute the total reward.
 		Looks for self._reward_<REWARD_NAME>, where <REWARD_NAME> are names of all non zero reward scales in the cfg.
 	"""
 	# remove zero scales + multiply non-zero ones by dt
-	# 遍历奖励项权重列表
+	# 遍历奖励项缩放因子列表
 	for key in list(self.reward_scales.keys()):
 		scale = self.reward_scales[key]
 		if scale==0:
-			# 过滤零权重项，节省计算
+			# 过滤零缩放因子项，节省计算
 			self.reward_scales.pop(key)
 		else:
 			# (1)
@@ -805,12 +816,14 @@ def _prepare_reward_function(self):
 						 for name in self.reward_scales.keys()}
 ```
 
-- `(1)`仿真的频率是可以调节的，而为了保证奖励在物理意义上的统一性，累积奖励的计算应该以单位时间而非仿真步数来衡量。因此在预处理阶段，所有奖励项的权重都会按仿真时间步长折算。
+- `(1)`仿真的频率是可以调节的，而为了保证奖励在物理意义上的统一性，累积奖励的计算应该以单位时间而非仿真步数来衡量。因此在预处理阶段，所有奖励项的缩放因子都会按仿真时间步长折算。
 - `(2)` `getattr(object, name)`函数直接通过字符串名称`name`获取对象`object`的属性或方法。
 
 `compute_reward()`是奖励计算的核心执行函数：
 
 ```python
+# 🔍 reward/"reward_functions"
+# 📃 legged_robot.py
 # [163]
 def compute_reward(self):
     """ Compute rewards
@@ -826,9 +839,9 @@ def compute_reward(self):
         rew = self.reward_functions[i]() * self.reward_scales[name]
         # 累加到奖励缓冲区
         self.rew_buf += rew
-        # (1)
+        # (1) 累加到回合累积奖励
         self.episode_sums[name] += rew
-    # (2)可选奖励截断
+    # (2) 可选奖励截断
     if self.cfg.rewards.only_positive_rewards:
         self.rew_buf[:] = torch.clip(self.rew_buf[:], min=0.)
     # add termination reward after clipping
@@ -839,16 +852,131 @@ def compute_reward(self):
         self.episode_sums["termination"] += rew
 ```
 
-- `(1)`：`rew_buf[]`的计算周期是每个时间步，用于神经网络的更新；而`episode_sums[]`的计算周期是每个回合，其统计信息将用于日志记录（TensorBoard）。各个奖励项在回合尺度上的大小与占比可以为我们诊断训练问题、平衡奖励权重提供依据。
+- `(1)`：`rew_buf[]`的计算周期是每个时间步，用于神经网络的更新；而`episode_sums[]`的计算周期是每个回合，其统计信息将用于日志记录（TensorBoard）。各个奖励项在回合尺度上的大小与占比可以为我们诊断训练问题、平衡奖励缩放因子提供依据。
 - `(2)`：奖励截断将所有负奖励截断为零，是保障训练稳定性和探索效率的工程技巧。训练初期，策略完全随机，会产生大量负奖励且方差较大，奖励截断的作用在于：
   - 避免策略网络早期训练崩溃。过早地让策略接触大量负策略梯度容易扰乱学习方向，且抑制探索。
   - 简化价值网络需要学习的分布范围，稳定训练，促进收敛。
 
-_未完待续_
+## 奖励缩放因子的调整策略
 
-## 奖励权重的调整策略
+_待补充_
 
 # 观测空间
+
+足式机器人的观测空间输入主要来自以下几个部分：
+
+- **本体感知**：机器人的内部状态，如关节运动信息、基座运动信息等。
+- **外部感知**：环境信息，通常与机器人配备的传感器绑定，对复杂地形至关重要。例如由深度相机采集的深度图或处理得到的点云，也可与深度学习结合利用神经网络提取特征后输入。
+- **任务相关输入**：用户指令，如期望的前进速度、转向角速度等。
+
+`compute_observations()`函数负责构建机器人当前时刻的观测状态向量作为神经网络的输入：
+
+```python
+# 🔍 observation
+# 📃 legged_robot.py
+# [182]
+def compute_observations(self):
+	""" Computes observations
+	"""
+	# 所有环境的观测空间输入拼接而成的二维张量[num_envs, obs_dim]
+	self.obs_buf = torch.cat((  self.base_lin_vel * self.obs_scales.lin_vel, # (1) 线速度(x, y, z)
+								self.base_ang_vel  * self.obs_scales.ang_vel, # 角速度(roll, pitch, yaw)
+								self.projected_gravity, # 重力向量在基座坐标系下的投影(x_b, y_b, z_b)
+								self.commands[:, :3] * self.commands_scale, # 控制指令(前进速度, 侧移速度, 转向角速度)
+								(self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos, # 相对于默认姿态的关节位置偏差[机器人关节数量]
+								self.dof_vel * self.obs_scales.dof_vel, # 关节速度[机器人关节数量]
+								self.actions # 上一步的动作[动作空间维度]
+								),dim=-1)
+	# add perceptive inputs if not blind
+	# add noise if needed
+	# (2) 添加噪声
+	if self.add_noise:
+		self.obs_buf += (2 * torch.rand_like(self.obs_buf) - 1) * self.noise_scale_vec
+```
+
+- `(1)`：观测空间的不同物理量数值范围存在差异，通过`obs_scales`类对其进行缩放到相近的范围（归一化），便于神经网络学习。
+  - 重力向量仅用于观测姿态，本身是单位向量，无需归一化。
+- `(2)`：噪声注入是在训练时对所有观测量添加`[-1, 1)`均匀分布的噪声，以提高策略对传感器噪声的稳定性的方法，测试时关闭。
+  - `torch.rand_like()`生成一个与 `self.obs_buf` 形状完全相同的张量，每个元素是在 `[0, 1)` 区间内均匀分布的随机数。
+
+观测缩放因子配置：
+
+```python
+# 🔍 "obs_scales"
+# 📃 legged_robot_config.py
+# [128]
+class obs_scales:
+	lin_vel = 2.0
+	ang_vel = 0.25
+	dof_pos = 1.0
+	dof_vel = 0.05
+	# 🐞 找不到这个参数的具体用法
+	height_measurements = 5.0
+```
+
+## 观测噪声
+
+`noise_scale_vec[]`由`_get_noise_scale_vec()`函数构建：
+
+```python
+# 🔍 "noise_scale_vec"
+# 📃 legged_robot.py
+# [182]
+def _get_noise_scale_vec(self, cfg):
+	""" Sets a vector used to scale the noise added to the observations.
+		[NOTE]: Must be adapted when changing the observations structure
+
+	Args:
+		cfg (Dict): Environment config file
+
+	Returns:
+		[torch.Tensor]: Vector of scales used to multiply a uniform distribution in [-1, 1]
+	"""
+	# 零初始化一个长度等于观测维度的噪声向量
+	noise_vec = torch.zeros_like(self.obs_buf[0])
+	# 获取噪声相关配置: 是否添加噪声, 基础噪声比例, 全局噪声强度
+	self.add_noise = self.cfg.noise.add_noise
+	noise_scales = self.cfg.noise.noise_scales
+	noise_level = self.cfg.noise.noise_level
+	# (1) 计算各观测噪声幅值: 基础噪声比例 * 全局噪声强度 * 观测缩放因子
+	# 指令和动作是精确的，无需添加训练噪声
+	noise_vec[:3] = noise_scales.lin_vel * noise_level * self.obs_scales.lin_vel
+	noise_vec[3:6] = noise_scales.ang_vel * noise_level * self.obs_scales.ang_vel
+	noise_vec[6:9] = noise_scales.gravity * noise_level
+	noise_vec[9:12] = 0. # commands
+	noise_vec[12:12+self.num_actions] = noise_scales.dof_pos * noise_level * self.obs_scales.dof_pos
+	noise_vec[12+self.num_actions:12+2*self.num_actions] = noise_scales.dof_vel * noise_level * self.obs_scales.dof_vel
+	noise_vec[12+2*self.num_actions:12+3*self.num_actions] = 0. # previous actions
+
+	return noise_vec
+```
+
+- `(1)`：观测噪声幅值计算仍需乘以观测缩放因子，因为基础噪声比例是基于原始物理量而非观测空间给出的，这种解耦让参数更具可解释性，便于人为赋值。
+
+观测噪声配置：
+
+```python
+# 🔍 "noise"
+# 📃 legged_robot_config.py
+# [137]
+class noise:
+	add_noise = True
+	noise_level = 1.0 # scales other values
+	class noise_scales:
+		dof_pos = 0.01
+		dof_vel = 1.5
+		lin_vel = 0.1
+		ang_vel = 0.2
+		gravity = 0.05
+		# 🐞 找不到这个参数的具体用法
+		height_measurements = 0.1
+```
+
+_未完待续_
+
+# 动作空间
+
+# 训练过程
 
 # PPO超参数
 
