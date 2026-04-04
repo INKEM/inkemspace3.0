@@ -2,7 +2,7 @@
   import { getLocalTheme, getSystemTheme, changePageTheme } from '@/utils/theme'
 
   // 哀悼日
-  const MOURNING_DAYS = []
+  const MOURNING_DAYS = ['4-4', '5-12', '7-7', '9-18', '12-13']
 
   function isMourningDay() {
     const today = new Date()
@@ -18,9 +18,9 @@
     } else {
       changePageTheme(localTheme)
     }
-    if (isMourningDay()) {
-      document.documentElement.classList.add('gray')
-    }
+    // if (isMourningDay()) {
+    //   document.documentElement.classList.add('gray')
+    // }
   }
 
   load()
