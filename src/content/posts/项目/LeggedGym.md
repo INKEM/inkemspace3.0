@@ -496,9 +496,9 @@ def _reward_orientation(self):
 
 ⚠️ 所有的奖励函数都返回一个形状为`[num_envs（环境数量）]`的一维张量，存储每个环境各自结算的奖励项。
 
-⚠️ 可以发现，`legged_robot.py`定义了强化学习环境具体的运行逻辑，而`legged_robot_config.py`是调整`legged_robot.py`运行参数的配置接口，是所有机器人训练的通用模板。`\envs`目录下分目录存储了所有机器人型号各自的`env`和`config`文件，它们继承自`legged_robot`文件，为训练专门的机器人型号做了特定的适配。`go2`的环境直接使用`legged_robot.py`，无需单独的`env`文件。现阶段后续代码的定位范围均在这两个文件下：
+⚠️ 可以发现，`legged_robot.py`定义了强化学习环境具体的运行逻辑，而`legged_robot_config.py`是调整`legged_robot.py`运行参数的配置接口，是所有机器人训练的通用模板。`\envs`目录下分目录存储了所有机器人型号各自的`env`和`config`文件，它们继承自`legged_robot`文件，为训练专门的机器人型号做了特定的适配。
 
-![](Pasted%20image%2020260403163543.png)
+![](https://inkem-1306784622.cos.accelerate.myqcloud.com/blog/pic/Pasted%20image%2020260403163543.png)
 
 ## 奖励函数
 
