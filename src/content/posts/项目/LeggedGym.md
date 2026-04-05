@@ -1,7 +1,7 @@
 ---
 title: 【Legged Gym】四足机器人强化学习项目入门（更新中）
-date: 2026-03-28
-lastMod: 2026-04-01
+date: 2026-04-05
+lastMod: 2026-04-05
 summary: Legged Gym 是苏黎世联邦理工大学‌（ETH Zurich），主要用于训练四足机器人的运动控制策略 。‌‌
 tags: [Legged Gym, IsaacGym, 四足机器人, PPO]
 category: 项目学习
