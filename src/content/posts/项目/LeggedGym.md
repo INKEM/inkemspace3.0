@@ -2,12 +2,12 @@
 title: 【Legged Gym】四足机器人强化学习项目入门（更新中）
 date: 2026-04-05
 lastMod: 2026-04-05
-summary: Legged Gym 是苏黎世联邦理工大学‌（ETH Zurich），主要用于训练四足机器人的运动控制策略 。‌‌
+summary: Legged Gym 是苏黎世联邦理工大学‌（ETH Zurich）开源的主要用于训练四足机器人的运动控制策略。‌‌
 tags: [Legged Gym, IsaacGym, 四足机器人, PPO]
 category: 项目学习
 ---
 
-项目地址：https://github.com/unitreerobotics/unitree_rl_gym
+项目地址：https://github.com/leggedrobotics/legged_gym
 
 标注说明：
 
@@ -15,14 +15,10 @@ category: 项目学习
   - _配图/待补充_：博主后续更新才会在这里补充配图或正文。
   - ⚠️：需要注意的内容，否则可能会在后面遇到困惑。
   - 🐞：博主暂未解决的，可能是项目bug的问题，或者博主暂时无法解释的部分。
-- 🔍代码定位（VSCode编辑器）
-  - `...`：提示定位对应代码可以搜索的关键词。
-  - 📌：提示定位对应代码可以右键使用“转到定义”的变量或函数，通常接续上一个展示的代码块。
-  - `"..."`：提示定位对应代码可以右键使用“查找所有引用”的变量或函数，通常接续上一个展示的代码块。
-  - `→`：需要通过多次操作中转才能定位对应代码。
+- 代码定位
   - 📃：给出代码段所在代码文件。
+  - `[*]`：指引代码段在原始代码文件中的行数。
 - 代码注释
-  - `[*]...`：在必要的地方指引代码段在原始代码文件中的行数。
   - `(*)...`：将在代码块之后以正文形式补充讲解。
   - `(a, ..., b)`：一维张量的元素。
   - `[a, ..., b]`：n维张量的形状。
@@ -153,7 +149,7 @@ cd legged_gym
 pip install -e .
 ```
 
-由于项目版本较老，博主又遇到了一系列兼容问题，完整的适配方案如下：
+由于项目版本依赖有点过时，博主又遇到了一系列兼容问题，最后得到完整的适配调整方案如下：
 
 ```bash
 pip install matplotlib==3.3.4
@@ -393,7 +389,7 @@ python legged_gym/scripts/train.py --task=anymal_c_flat --resume --experiment_na
 运行`play.py`可查看训练效果：
 
 ```bash
-python legged_gym/scripts/play.py --task=go2
+python legged_gym/scripts/play.py --task=anymal_c_flat
 ```
 
 指定模型的参数包括`--experiment` `--load_run` `--checkpoint`，用法与运行训练的命令相同。
@@ -436,46 +432,25 @@ tensorboard --logdir=logs --port=6006
 
 ![](https://inkem-1306784622.cos.accelerate.myqcloud.com/blog/pic/Pasted%20image%2020260329212855.png)
 
+# 基础篇
+
+现在我们开始深入学习Legged Gym的代码部分。博主将按强化学习任务的定义，对项目进行先模块化拆分再整合的讲解。在整体架构方面，这里先给出`legged_gym/env/base`目录下`legged_robot.py`和`legged_robot_config.py`的作用与关系，它们是对机器人基础训练环境的具象描述，也是我们第一阶段学习的重点：
+
+- `legged_robot_config.py`：定义配置类，其中`LeggedRobotCfg`类定义环境参数，`LeggedRobotCfgPPO`类定义训练算法参数。
+- `legged_robot.py`：定义环境构建方法，读取`legged_robot_config.py`的配置为`cfg`属性，将仿真底层转化为具体的机器人训练环境。
+- 二者定义了足式机器人通用的训练环境，不同的机器人型号的训练任务均基于此进行调整，文件存放在`/env`对应的型号文件夹下。
+
+每一个模块博主会先讲解其在`legged_robot.py`中如何构建，随后列出`legged_robot_config.py`中配置构建方法的参数，再对参数在`legged_robot.py`中的中间处理过程进行必要的补充。
+
 # 奖励
 
-`rewards`类定义了所有与奖励相关的配置参数：
+在足式机器人的强化学习框架中，奖励居于核心地位，它定义了什么是“好”的行为，是策略学习过程的根本驱动力。奖励函数的设计直接决定了强化学习算法在具体项目中的训练效果，也是足式机器人任务区别于其他强化学习任务的本质特征。
+
+## 奖励函数
+
+计算各奖励函数的方法定义在`legged_robot.py`的最后：
 
 ```python
-# 🔍 reward
-# 📃 legged_robot_config.py
-# [130]
-class rewards:
-	# 所有奖励函数的缩放因子
-    class scales:
-        termination = -0.0
-        tracking_lin_vel = 1.0
-        tracking_ang_vel = 0.5
-        lin_vel_z = -2.0
-        ang_vel_xy = -0.05
-        orientation = -0.
-        torques = -0.00001
-        dof_vel = -0.
-        dof_acc = -2.5e-7
-        base_height = -0.
-        feet_air_time =  1.0
-        collision = -1.
-        feet_stumble = -0.0
-        action_rate = -0.01
-        stand_still = -0.
-
-    only_positive_rewards = True # if true negative total rewards are clipped at zero (avoids early termination problems)
-    tracking_sigma = 0.25 # tracking reward = exp(-error^2/sigma)
-    soft_dof_pos_limit = 1. # percentage of urdf limits, values above this limit are penalized
-    soft_dof_vel_limit = 1.
-    soft_torque_limit = 1.
-    base_height_target = 1.
-    max_contact_force = 100. # forces above this value are penalized
-```
-
-定义了各奖励项计算方法的奖励函数：
-
-```python
-# 🔍 reward/任意奖励函数缩放因子名
 # 📃 legged_robot.py
 # [815]
 #------------ reward functions----------------
@@ -494,15 +469,9 @@ def _reward_orientation(self):
 # ...
 ```
 
-⚠️ 所有的奖励函数都返回一个形状为`[num_envs（环境数量）]`的一维张量，存储每个环境各自结算的奖励项。
+⚠️ 所有的奖励函数的方法都返回一个形状为`[num_envs（环境数量）]`的一维张量，存储每个环境各自结算的奖励项。
 
-⚠️ 可以发现，`legged_robot.py`定义了强化学习环境具体的运行逻辑，而`legged_robot_config.py`是调整`legged_robot.py`运行参数的配置接口，是所有机器人训练的通用模板。`\envs`目录下分目录存储了所有机器人型号各自的`env`和`config`文件，它们继承自`legged_robot`文件，为训练专门的机器人型号做了特定的适配。
-
-![](https://inkem-1306784622.cos.accelerate.myqcloud.com/blog/pic/Pasted%20image%2020260403163543.png)
-
-## 奖励函数
-
-奖励在数学上默认包含正负两种情况，而奖励项的作用具体是激励还是惩罚在代码中由`scales`类处理，函数内部一概返回正奖励值。为了便于理解，对于给予负缩放因子的奖励项，博主将直接称呼其为惩罚以做区分。
+奖励在数学上默认包含正负两种情况，而奖励项的效果具体是激励还是惩罚在奖励函数方法外部由奖励缩放因子处理，函数内部一概返回原始值。为了便于理解，对于给予负缩放因子的奖励项，博主将直接称呼其为惩罚以做区分。
 
 ### 任务目标奖励
 
@@ -565,9 +534,9 @@ def _reward_orientation(self):
     return torch.sum(torch.square(self.projected_gravity[:, :2]), dim=1)
 ```
 
-**姿态惩罚**$-\|\mathbf g_{\mathrm{project}}\|^2$惩罚机器人重力向量在基座坐标系$XY$维度下的投影。相比角速度惩罚，姿态惩罚直接惩罚基座姿态倾斜的角度。
+**姿态惩罚**$-\|\mathbf g_{\mathrm{project}}\|^2$惩罚机器人重力向量在基座坐标系$XY$维度下的投影。相比角速度惩罚，姿态惩罚直接惩罚基座姿态倾斜的角度。下图是一个二维模型演示。
 
-_配图_
+![](https://inkem-1306784622.cos.accelerate.myqcloud.com/blog/pic/Pasted%20image%2020260406173744.png)
 
 同时惩罚角速度和角度是控制理论中 PD 控制在奖励函数中的体现，能够让机器人快速回正且抑制震荡。
 
@@ -636,7 +605,7 @@ def _reward_collision(self):
 
 **碰撞惩罚**惩罚非足端部位的碰撞次数。
 
-⚠️碰撞次数的统计通过计算接触力实现：
+⚠️ 碰撞次数的统计通过计算接触力实现：
 
 1. `self.contact_forces[]`：一个三维张量`[num_envs, num_bodies(机器人刚体数量), 3]`，存储每个环境（机器人）的每个刚体的接触力在$XYZ$三个方向的分量；
 2. `self.penalised_contact_indices[]`：存储并筛选所有需要惩罚碰撞的刚体索引；
@@ -652,7 +621,7 @@ def _reward_termination(self):
     return self.reset_buf * ~self.time_out_buf
 ```
 
-**终止惩罚**惩罚环境触发提前终止的次数，具体机制与终止条件的判断函数`check_termination()`有关：
+**终止惩罚**惩罚环境触发提前终止的次数，具体机制与终止条件的判断方法`check_termination()`有关：
 
 ```python
 # 🔍 "reset_buf"/"time_out_buf"
@@ -668,9 +637,7 @@ def check_termination(self):
     self.reset_buf |= self.time_out_buf
 ```
 
-对每个环境，布尔张量`self.reset_buf`判断其是否触发任意终止条件，`time_out_buf`判断其是否触发超时终止条件（到达回合时间限制）。
-
-_配图_
+对每个环境，布尔张量`reset_buf`判断其是否触发任意终止条件，`time_out_buf`判断其是否触发超时终止条件（到达回合时间限制）。
 
 ```python
 # [857]
@@ -683,7 +650,7 @@ def _reward_dof_pos_limits(self):
 
 **关节限位惩罚**惩罚关节位置超出软限位的大小。
 
-软限位是软件设置的限位，比物理硬件限位更严格，以留出惩罚作用幅度的余量。
+软限位是软件设置的限位，比物理硬件限位更严格，以留出惩罚作用幅度的余量。软限位的具体计算逻辑将在关节速度/力矩限制惩罚之后介绍。
 
 ```python
 # [863]
@@ -707,6 +674,46 @@ def _reward_torque_limits(self):
 **关节力矩限制惩罚**惩罚关节力矩超出软限位的大小。
 
 在速度惩罚和力矩惩罚的基础上，速度限制惩罚和力矩限制惩罚的作用在于进一步平衡奖惩机制，防止策略为了更高的任务奖励而牺牲安全性，对于超出安全边界的情况加大惩罚力度。
+
+`_process_dof_props()`方法处理应用于奖励函数的关节限制：
+
+```python
+def _process_dof_props(self, props, env_id):
+    """ Callback allowing to store/change/randomize the DOF properties of each environment.
+        Called During environment creation.
+        Base behavior: stores position, velocity and torques limits defined in the URDF
+
+    Args:
+        props (numpy.array): Properties of each DOF of the asset
+        env_id (int): Environment id
+
+    Returns:
+        [numpy.array]: Modified DOF properties
+    """
+    # (1)
+    if env_id==0:
+    	# 创建存储关节位置/速度/力矩限制的张量
+        self.dof_pos_limits = torch.zeros(self.num_dof, 2, dtype=torch.float, device=self.device, requires_grad=False)
+        self.dof_vel_limits = torch.zeros(self.num_dof, dtype=torch.float, device=self.device, requires_grad=False)
+        self.torque_limits = torch.zeros(self.num_dof, dtype=torch.float, device=self.device, requires_grad=False)
+        # 遍历所有关节
+        for i in range(len(props)):
+        	# 读取URDF文件中的硬限制
+            self.dof_pos_limits[i, 0] = props["lower"][i].item()
+            self.dof_pos_limits[i, 1] = props["upper"][i].item()
+            self.dof_vel_limits[i] = props["velocity"][i].item()
+            self.torque_limits[i] = props["effort"][i].item()
+            # soft limits
+            # (2) 对位置限制应用软限位
+            m = (self.dof_pos_limits[i, 0] + self.dof_pos_limits[i, 1]) / 2
+            r = self.dof_pos_limits[i, 1] - self.dof_pos_limits[i, 0]
+            self.dof_pos_limits[i, 0] = m - 0.5 * r * self.cfg.rewards.soft_dof_pos_limit
+            self.dof_pos_limits[i, 1] = m + 0.5 * r * self.cfg.rewards.soft_dof_pos_limit
+    return props
+```
+
+- `(1)`：第`i`个创建的环境`env_id`为`i-1`，初始化相关步骤均只在初次创建环境时执行。
+- `(2)`：软限位因子将限制范围以中点为原点进行缩放。速度和力矩的限制范围中点均为零点，因此直接在奖励函数的计算中乘以软限位缩放因子即可。而位置的中点不一定是零点，需要先计算中点`m`和范围大小`r`，再计算软限位的边界。
 
 ### 步态与行为风格
 
@@ -765,7 +772,7 @@ def _reward_feet_contact_forces(self):
 
 ## 奖励的统一处理
 
-`_prepare_reward_function()`是奖励的初始化函数，用于动态构建奖励函数列表并进行预处理：
+`_prepare_reward_function()`是奖励的初始化方法，用于动态构建奖励函数列表并进行预处理：
 
 ```python
 # 🔍 reward
@@ -789,7 +796,7 @@ def _prepare_reward_function(self):
 	# 动态绑定奖励函数及其名称
 	self.reward_functions = []
 	self.reward_names = []
-	# 📌reward_scales由legged_robot_config.py中的reward.scales类转化为字典得到
+	# reward_scales由legged_robot_config.py中的reward.scales类转化为字典得到
 	for name, scale in self.reward_scales.items():
 		# 单独处理终止惩罚
 		if name=="termination":
@@ -808,7 +815,7 @@ def _prepare_reward_function(self):
 - `(1)`：仿真的频率是可以调节的，而为了保证奖励在物理意义上的统一性，累积奖励的计算应该以单位时间而非仿真步数来衡量。因此在预处理阶段，所有奖励项的缩放因子都会按仿真时间步长折算。
 - `(2)`：`getattr(object, name)`函数直接通过字符串名称`name`获取对象`object`的属性或方法。
 
-`compute_reward()`是奖励计算的核心执行函数：
+`compute_reward()`是奖励计算的核心执行方法：
 
 ```python
 # 🔍 reward/"reward_functions"
@@ -846,9 +853,128 @@ def compute_reward(self):
   - 避免策略网络早期训练崩溃。过早地让策略接触大量负策略梯度容易扰乱学习方向，且抑制探索。
   - 简化价值网络需要学习的分布范围，稳定训练，促进收敛。
 
-## 奖励参数配置
+`rewards`类定义了所有与奖励相关的配置参数：
 
-_待补充_
+```python
+# 📃 legged_robot_config.py
+# [130]
+class rewards:
+	# 所有奖励函数的缩放因子
+    class scales:
+        termination = -0.0
+        tracking_lin_vel = 1.0
+        tracking_ang_vel = 0.5
+        lin_vel_z = -2.0
+        ang_vel_xy = -0.05
+        orientation = -0.
+        torques = -0.00001
+        dof_vel = -0.
+        dof_acc = -2.5e-7
+        base_height = -0.
+        feet_air_time =  1.0
+        collision = -1.
+        feet_stumble = -0.0
+        action_rate = -0.01
+        stand_still = -0.
+
+	# 奖励截断选项
+    only_positive_rewards = True # if true negative total rewards are clipped at zero (avoids early termination problems)
+    # 跟踪误差容忍度
+    tracking_sigma = 0.25 # tracking reward = exp(-error^2/sigma)
+    # 软限位因子
+    soft_dof_pos_limit = 1. # percentage of urdf limits, values above this limit are penalized
+    soft_dof_vel_limit = 1.
+    soft_torque_limit = 1.
+    # 基座工作高度
+    base_height_target = 1.
+    # 足端接触力限制
+    max_contact_force = 100. # forces above this value are penalized
+```
+
+## 自定义奖励函数
+
+通过对现有奖励函数相关代码的介绍，我们可以总结出创建一个自定义奖励函数的步骤和注意点（不涉及对观测空间和动作空间等的更复杂的调整）。但奖励设计的逻辑和训练过程中奖励缩放因子的调整比较依赖工程积累，且本系列目前以基础的项目调试与修改能力为重点，恕博主**暂时**不做详细展开，提供的案例也依赖了 AI 建议。
+
+假设对于`anymal_c_flat`任务，我们需要让机器人在对角步态的基础上小跳前进，首先在`legged_robot.py`的最后定义奖励函数计算的方法：
+
+```python
+# 📃 legged_robot.py
+# [908]
+# 跳跃任务目标
+def _reward_jump(self):
+    # 身体上下速度（绝对值越大说明跳得越猛）
+    vertical_vel = torch.abs(self.base_lin_vel[:, 2])
+    # 所有脚离地（真正的跳）
+    feet_contact = self.contact_forces[:, self.feet_indices, 2] < 1.0
+    all_feet_off = torch.all(feet_contact, dim=1).float()
+    # 有向前速度时才给奖励
+    forward_speed = torch.norm(self.commands[:, :2], dim=1)
+    has_command = (forward_speed > 0.1).float()
+    # 组合：垂直速度 + 跳跃奖励 + 命令条件
+    return (vertical_vel * 0.1 + all_feet_off * 0.5) * has_command
+
+# 高度安全约束
+def _reward_jump_safety(self):
+    height = self.root_states[:, 2]
+    # 超过高度限制height_limit惩罚
+    too_high = torch.clamp(height - self.cfg.rewards.height_limit, min=0.)
+    return too_high
+```
+
+- 以`_reward_`+`奖励名`的方式命名。
+- 奖励函数应返回未经奖励缩放因子（包括正负号）处理的，形状为`[num_envs]`的原始值。
+- 需要根据任务目标和训练过程灵活调整的内部计算参数由`self.cfg.rewards.参数名`调用，在下一步补充。
+
+随后在`legged_robot_config.py`的`reward`类中补充奖励函数的缩放因子`奖励名`和计算参数`参数名`：
+
+```python
+# 📃 legged_robot_config.py
+# [130]
+class rewards:
+    class scales:
+    	# ...
+        # 新增缩放因子
+		jump = 0.0
+		jump_safety = -0.0
+    # ...
+    # 新增计算参数
+    # 跳跃高度限制
+    height_limit = 0.5
+```
+
+这里博主给出自己的训练过程以供参考。
+
+首先使用项目的默认参数训练一轮，让机器人学会基础的对角步态行走。
+
+接下来的三轮训练博主对奖励缩放因子做出如下逐步调整（只给出需要调整的项）：
+
+```python
+# 📃 legged_robot_config.py
+# [130]
+class rewards:
+	class scales:
+		# 跳跃需要一定的垂直速度，从惩罚变为奖励
+		lin_vel_z = -1.0 → -1.0 → 0.2
+		# 跳跃可能会带来一定的姿态倾斜，略微降低惩罚
+		ang_vel_xy = -0.02
+		# jump包含对腾空时间的奖励，略微降低惩罚
+		feet_air_time =  0.5
+		# 跳跃更容易产生碰撞，略微降低惩罚
+		collision = -1.0
+		# 跳跃需要更大的动作变化率，略微降低惩罚
+		action_rate = -0.005
+		# 逐步提高跳跃奖励
+		jump = 0.2 → 1.0 → 1.5
+		# 跳跃高度安全约束
+		jump_safety = -5.0
+```
+
+实际过程中后续训练的前两轮效果都不明显，最后一步将垂直速度惩罚变为奖励起到了关键作用。最终得到的效果如下：
+
+<video controls width="800" preload="metadata">
+  <source src="https://inkem-1306784622.cos.accelerate.myqcloud.com/blog/pic/output1.mp4" type="video/mp4">
+  您的浏览器不支持视频播放。
+</video>
 
 # 观测空间
 
@@ -858,7 +984,7 @@ _待补充_
 - **外部感知**：环境信息，通常与机器人配备的传感器绑定，对复杂地形至关重要。例如由深度相机采集的深度图或处理得到的点云，也可与深度学习结合利用神经网络提取特征后输入。
 - **任务相关输入**：用户指令，如期望的前进速度、转向角速度等。
 
-`compute_observations()`函数负责构建机器人当前时刻的观测状态向量作为神经网络的输入：
+`compute_observations()`方法负责构建机器人当前时刻的观测状态向量作为神经网络的输入：
 
 ```python
 # 🔍 observation
@@ -912,7 +1038,7 @@ class obs_scales:
 
 ## 观测噪声
 
-`noise_scale_vec[]`由`_get_noise_scale_vec()`函数构建：
+`noise_scale_vec[]`由`_get_noise_scale_vec()`方法构建：
 
 ```python
 # 🔍 "noise_scale_vec"
@@ -968,11 +1094,13 @@ class noise:
 		height_measurements = 0.1
 ```
 
+## 指令
+
 # 动作空间与控制器
 
 足式机器人的动作空间根据表达的抽象程度可以划分为以下几个层级：
 
-- **低层级**：关节扭矩
+- **低层级**：关节力矩
   - 无需底层控制器，动作直接发送给电机。
 - **中层级**：关节速度/位置
   - 由一个运行频率更高的底层控制器来驱动关节电机，使其快速达到目标速度/位置。
@@ -985,7 +1113,7 @@ class noise:
 - 机器人运动的灵活性降低。
 - 动作空间维度和指令复杂度的降低让强化学习任务的训练变得更加简单。
 
-`_compute_torques()`函数将动作空间的决策转换为关节扭矩：
+`_compute_torques()`方法将动作空间的决策转换为关节力矩：
 
 ```python
 # 🔍 action, control
@@ -1008,7 +1136,7 @@ def _compute_torques(self, actions):
 	actions_scaled = actions * self.cfg.control.action_scale
 	# 获取控制类型参数
 	control_type = self.cfg.control.control_type
-	# (2) P位置控制, V速度控制, T扭矩控制
+	# (2) P位置控制, V速度控制, T力矩控制
 	if control_type=="P":
 		torques = self.p_gains*(actions_scaled + self.default_dof_pos - self.dof_pos) - self.d_gains*self.dof_vel
 	elif control_type=="V":
@@ -1017,7 +1145,7 @@ def _compute_torques(self, actions):
 		torques = actions_scaled
 	else:
 		raise NameError(f"Unknown controller type: {control_type}")
-	# 扭矩裁剪, 使之不超过电机物理限制
+	# 力矩裁剪, 使之不超过电机物理限制
 	return torch.clip(torques, -self.torque_limits, self.torque_limits)
 ```
 
@@ -1025,7 +1153,7 @@ def _compute_torques(self, actions):
 - `(2)`：根据控制器提供的模式，策略网络可以使用关节位置、速度和力矩作为动作空间。
   - **位置控制**：动作被解释为默认关节位置的偏移量，比例项跟踪位置误差，微分项跟踪关节速度。
   - **速度控制**：动作被解释为关节速度，比例项跟踪速度误差，微分项跟踪关节加速度（替代为相邻时间步速度差除以时间步长）。
-  - **扭矩控制**：动作被解释为关节扭矩，直接输出到电机。
+  - **力矩控制**：动作被解释为关节力矩，直接输出到电机。
 
 控制器参数配置：
 
@@ -1098,7 +1226,7 @@ def _parse_cfg(self, cfg):
 
 ## 环境创建
 
-`create_sim()`是仿真环境创建的入口函数，负责建立完整的物理仿真世界：
+`create_sim()`是仿真环境创建的入口方法，负责建立完整的物理仿真世界：
 
 ```python
 # [198]
