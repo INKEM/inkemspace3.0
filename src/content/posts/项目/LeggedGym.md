@@ -208,7 +208,7 @@ fatal: unable to access 'https://github.com/unitreerobotics/unitree_rl_gym.git/'
 unzip 文件名.zip
 ```
 
-或者尝试使用镜像源：
+或者尝试使用镜像源，例如将项目地址中的github替换为githubfast：
 
 ```bash
 git clone https://githubfast.com/leggedrobotics/legged_gym.git
@@ -491,7 +491,7 @@ $$
 
 $\sigma$决定了奖励如何随跟踪误差衰减，对应参数`tracking_sigma`。$\sigma$越小，奖励曲线越陡峭，微小误差越能大幅降低奖励，相当于对跟踪误差的容忍度降低了。
 
-_配图_
+![|450](https://inkem-1306784622.cos.accelerate.myqcloud.com/blog/pic/Pasted%20image%2020260406175627.png)
 
 ```python
 # [877]
