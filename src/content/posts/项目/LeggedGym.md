@@ -624,7 +624,6 @@ def _reward_termination(self):
 **终止惩罚**惩罚环境触发提前终止的次数，具体机制与终止条件的判断方法`check_termination()`有关：
 
 ```python
-# 🔍 "reset_buf"/"time_out_buf"
 # 📃 legged_robot.py
 # [138]
 def check_termination(self):
@@ -678,6 +677,7 @@ def _reward_torque_limits(self):
 `_process_dof_props()`方法处理应用于奖励函数的关节限制：
 
 ```python
+# [279]
 def _process_dof_props(self, props, env_id):
     """ Callback allowing to store/change/randomize the DOF properties of each environment.
         Called During environment creation.
@@ -775,7 +775,6 @@ def _reward_feet_contact_forces(self):
 `_prepare_reward_function()`是奖励的初始化方法，用于动态构建奖励函数列表并进行预处理：
 
 ```python
-# 🔍 reward
 # 📃 legged_robot.py
 # [544]
 def _prepare_reward_function(self):
@@ -818,7 +817,6 @@ def _prepare_reward_function(self):
 `compute_reward()`是奖励计算的核心执行方法：
 
 ```python
-# 🔍 reward/"reward_functions"
 # 📃 legged_robot.py
 # [190]
 def compute_reward(self):
