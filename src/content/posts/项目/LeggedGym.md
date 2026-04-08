@@ -208,7 +208,7 @@ fatal: unable to access 'https://github.com/unitreerobotics/unitree_rl_gym.git/'
 unzip 文件名.zip
 ```
 
-或者尝试使用镜像源，例如将项目地址中的github替换为githubfast：
+或者尝试使用镜像源：
 
 ```bash
 git clone https://githubfast.com/leggedrobotics/legged_gym.git
@@ -260,10 +260,10 @@ python legged_gym/scripts/train.py --task=anymal_c_flat --num_envs=64 --headless
 
 ![|500](https://inkem-1306784622.cos.accelerate.myqcloud.com/blog/pic/Pasted%20image%2020260327204950.png)
 
-运行训练的终端将对每个回合更新显示训练数据，以下是博主第一轮训练倒数第二个回合的训练数据：
+运行训练的终端将对每轮迭代更新显示训练数据，以下是博主第一轮训练倒数第二轮迭代的训练数据：
 
 ```text
-# 回合迭代进度
+# 迭代进度
 Learning iteration 299/300
 # 仿真速度(环境交互收集数据耗时, 网络梯度更新耗时)
 Computation: 47909 steps/s (collection: 1.805s, learning 0.246s)
@@ -289,7 +289,7 @@ Mean episode rew_tracking_lin_vel: 0.8882
 --------------------------------------------------------------------------------
 # 总时间步
 Total timesteps: 29491200
-# 上一回合长度
+# 上一迭代长度
 Iteration time: 2.05s
 # 已训练时间
 Total time: 627.46s
@@ -327,7 +327,7 @@ Auto DL 无图形化界面，训练效果的查看方法详见**训练操作-训
 - `--checkpoint`：checkpoint 编号，默认加载最新一次文件；
 - `--num_envs`：并行训练的环境个数；
 - `--seed`：随机种子；
-- `--max_iterations`：训练的最大迭代回合数；
+- `--max_iterations`：训练的最大迭代次数；
 - `--sim_device`：仿真计算设备，指定 CPU 为 `--sim_device=cpu`；
 - `--rl_device`：强化学习计算设备，指定 CPU 为 `--rl_device=cpu`。
 
@@ -342,7 +342,7 @@ Auto DL 无图形化界面，训练效果的查看方法详见**训练操作-训
 - `date_time`：训练开始的时间，例如3月29日16时06分46秒为`Mar29_16-06-46`。
 - `run_name`：运行名称，默认为空，通过`--run_name`可以给定运行名称。
   - 在每个实验主题下，区分不同超参数或配置的训练尝试。
-- `checkpoint`：检查点，训练过程每 50 回合保存一次模型参数。
+- `checkpoint`：检查点，训练过程每 50 次迭代保存一次模型参数。
 
 启动一次新训练时，我们可以通过`--experiment_name`和`--run_name`区分这次训练：
 
@@ -366,8 +366,8 @@ python legged_gym/scripts/train.py --task=anymal_c_flat --resume --experiment_na
 
 > 🐞
 >
-> - 如果所加载的训练没有迭代到最大回合数就停止（例如`Ctrl+C`中断），则无论是否保存过模型参数，加载后的训练对已经迭代的回合数不会保留。
-> - 在已经迭代的回合数被正常保留的情况下，终端显示的预计剩余时间`ETA`会变为负数。
+> - 如果所加载的训练没有迭代到最大次数就停止（例如`Ctrl+C`中断），则无论是否保存过模型参数，加载后的训练对已经迭代的次数不会保留。
+> - 在已经迭代的次数被正常保留的情况下，终端显示的预计剩余时间`ETA`会变为负数。
 
 ## 训练的配置
 
@@ -375,7 +375,7 @@ python legged_gym/scripts/train.py --task=anymal_c_flat --resume --experiment_na
 
 - `--num_envs`：并行训练的环境个数。
 - `--seed`：训练使用的随机数种子。
-- `--max_iteration`：单次训练的最大迭代回合数。
+- `--max_iteration`：单次训练的最大迭代次数。
 
 其他配置，例如奖励缩放因子和PPO超参数等，则需在代码中修改后再启动训练。
 
@@ -976,6 +976,124 @@ class rewards:
   您的浏览器不支持视频播放。
 </video>
 
+# 指令
+
+**指令**是机器人需要解析并持续跟踪的目标信号。
+
+在本项目中，控制每个机器人的指令是一个四维向量`(前进速度, 侧移速度, 转向角速度, 目标航向角)`，在训练过程中由指令采样器方法`_resample_commands()`采样：
+
+```python
+# 📃 legged_robot.py
+# [337]
+def _resample_commands(self, env_ids):
+	""" Randommly select commands of some environments
+
+	Args:
+		env_ids (List[int]): Environments ids for which new commands are needed
+	"""
+	# (1) 前进速度采样, command_ranges指定范围
+	self.commands[env_ids, 0] = torch_rand_float(self.command_ranges["lin_vel_x"][0], self.command_ranges["lin_vel_x"][1], (len(env_ids), 1), device=self.device).squeeze(1)
+	# 侧移速度采样
+	self.commands[env_ids, 1] = torch_rand_float(self.command_ranges["lin_vel_y"][0], self.command_ranges["lin_vel_y"][1], (len(env_ids), 1), device=self.device).squeeze(1)
+	# 转向指令有两种模式
+	# 目标航向角模式, 控制机器人转到指定角度, 角速度额外计算
+	if self.cfg.commands.heading_command:
+		self.commands[env_ids, 3] = torch_rand_float(self.command_ranges["heading"][0], self.command_ranges["heading"][1], (len(env_ids), 1), device=self.device).squeeze(1)
+	# 角速度模式, 控制机器人以指定角速度旋转
+	else:
+		self.commands[env_ids, 2] = torch_rand_float(self.command_ranges["ang_vel_yaw"][0], self.command_ranges["ang_vel_yaw"][1], (len(env_ids), 1), device=self.device).squeeze(1)
+
+	# set small commands to zero
+	# (2) 若指令的总线速度小于0.2则置零
+	self.commands[env_ids, :2] *= (torch.norm(self.commands[env_ids, :2], dim=1) > 0.2).unsqueeze(1)
+```
+
+- `(1)`：`torch_rand_float()`先设置生成形状为`(len(env_ids), 1)`，又调用`squeeze(1)`移除大小为`1`的维度，AI 提供的说法是为了保证对不同`pytorch`版本`torch_rand_float()`接口的兼容性。
+- `(2)`：出于电机执行精度以及步态训练目标问题，机器人通常难以保持过低的速度稳定行走，因此直接设为静止，这也能提高训练稳定性和收敛速度。
+
+指令的采样时机与目标航向角指令角速度的计算在`_post_physics_step_callback()`方法中实现：
+
+```python
+# 📃 legged_robot.py
+# [320]
+def _post_physics_step_callback(self):
+	""" Callback called before computing terminations, rewards, and observations
+		Default behaviour: Compute ang vel command based on target and heading, compute measured terrain heights and randomly push robots
+	"""
+	# (1) 周期性重采样机制
+	env_ids = (self.episode_length_buf % int(self.cfg.commands.resampling_time / self.dt)==0).nonzero(as_tuple=False).flatten()
+	# 采样指令
+	self._resample_commands(env_ids)
+	# 为目标航向角指令计算角速度
+	if self.cfg.commands.heading_command:
+		# (2) 计算机体前向向量forward_vec在世界坐标系中的方向
+		forward = quat_apply(self.base_quat, self.forward_vec)
+		# 计算偏航角（当前航向角）
+		heading = torch.atan2(forward[:, 1], forward[:, 0])
+		# (3) 根据比例控制得到角速度（比例系数0.5*航向误差）, 并限制角速度范围在[-1, 1]
+		self.commands[:, 2] = torch.clip(0.5*wrap_to_pi(self.commands[:, 3] - heading), -1., 1.)
+	# ...
+```
+
+- `(1)`：不同环境的回合时间步进度不同步，筛选出回合时间步是采样周期时间步（采样周期/仿真时间步长）的整数倍的环境，为其采样新的指令。
+- `(2)`：`quat_apply()`通过对机体前向向量`[1, 0, 0]`应用机器人姿态四元数`base_quat`进行旋转得到其在世界坐标系中的表达。
+- `(3)`：`wrap_to_pi()`首先根据角度的周期性将角度（弧度制）对`2π`取模映射到`[0, 2π)`，再将`(π, 2π)`的部分减去`2π`映射到`(-π, 0)`，解决例如`1°`到`359°`实际误差为`2°`但被计算为`358°`的问题。
+
+## 课程学习
+
+课程学习是一种根据机器人训练表现自适应调整指令难度的训练方式，由在每个环境回合结束后调用`update_command_curriculum()`方法实现：
+
+```python
+# 📃 legged_robot.py
+# [443]
+def update_command_curriculum(self, env_ids):
+    """ Implements a curriculum of increasing commands
+
+    Args:
+        env_ids (List[int]): ids of environments being reset
+    """
+    # If the tracking reward is above 80% of the maximum, increase the range of commands
+    # 提升难度的条件: 回合平均线速度跟踪奖励超过最大值的80%
+    if torch.mean(self.episode_sums["tracking_lin_vel"][env_ids]) / self.max_episode_length > 0.8 * self.reward_scales["tracking_lin_vel"]:
+    	# 前进速度指令下限降低0.5, 直到达到最低下限-max_curriculum
+        self.command_ranges["lin_vel_x"][0] = np.clip(self.command_ranges["lin_vel_x"][0] - 0.5, -self.cfg.commands.max_curriculum, 0.)
+        # 前进速度指令上限提高0.5, 直到达到最高上限max_curriculum
+        self.command_ranges["lin_vel_x"][1] = np.clip(self.command_ranges["lin_vel_x"][1] + 0.5, 0., self.cfg.commands.max_curriculum)
+```
+
+## 指令配置
+
+指令配置参数：
+
+```python
+# 📃 legged_robot_config.py
+# [68]
+class commands:
+	# 是否启用课程学习
+    curriculum = False
+    # 课程学习最高难度（线速度指令范围[-max_curriculum, max_curriculum]）
+    max_curriculum = 1.
+    # 指令维度
+    num_commands = 4 # default: lin_vel_x, lin_vel_y, ang_vel_yaw, heading (in heading mode ang_vel_yaw is recomputed from heading error)
+    # 指令采样周期
+    resampling_time = 10. # time before command are changed[s]
+    # 是否使用航向角模式指令
+    heading_command = True # if true: compute ang vel command from heading error
+    # 指令范围
+    class ranges:
+        lin_vel_x = [-1.0, 1.0] # min max [m/s]
+        lin_vel_y = [-1.0, 1.0]   # min max [m/s]
+        ang_vel_yaw = [-1, 1]    # min max [rad/s]
+        heading = [-3.14, 3.14]
+```
+
+自定义指令的基本步骤：
+
+1. 修改指令维度`num_commands`。
+2. 配置指令项范围。
+3. 在`_resample_commands()`方法中写入指令采样。
+4. 可选在`update_command_curriculum()`方法中配置课程学习。
+
 # 观测空间
 
 足式机器人的观测空间输入主要来自以下几个部分：
@@ -987,61 +1105,64 @@ class rewards:
 `compute_observations()`方法负责构建机器人当前时刻的观测状态向量作为神经网络的输入：
 
 ```python
-# 🔍 observation
 # 📃 legged_robot.py
-# [182]
+# [209]
 def compute_observations(self):
 	""" Computes observations
 	"""
 	# 所有环境的观测空间输入拼接而成的二维张量[num_envs, obs_dim]
-	# 本体感知输入
+	# 本体感知与任务相关输入
 	self.obs_buf = torch.cat((  self.base_lin_vel * self.obs_scales.lin_vel, # (1) 线速度(x, y, z)
 								self.base_ang_vel  * self.obs_scales.ang_vel, # 角速度(roll, pitch, yaw)
 								self.projected_gravity, # 重力向量在基座坐标系下的投影(x_b, y_b, z_b)
-								self.commands[:, :3] * self.commands_scale, # 控制指令(前进速度, 侧移速度, 转向角速度)
+								self.commands[:, :3] * self.commands_scale, # 控制指令(lin_vel_x, lin_vel_y, ang_vel_yaw, heading)
 								(self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos, # 相对于默认姿态的关节位置偏差[机器人关节数量]
 								self.dof_vel * self.obs_scales.dof_vel, # 关节速度[机器人关节数量]
 								self.actions # 上一步的动作[动作空间维度]
 								),dim=-1)
 	# add perceptive inputs if not blind
 	# 额外拼接外部感知输入
-	# 可选观测高度
+	# 可选观测高度[采样点数量]
 	if self.cfg.terrain.measure_heights:
 		# (2)
 		heights = torch.clip(self.root_states[:, 2].unsqueeze(1) - 0.5 - self.measured_heights, -1, 1.) * self.obs_scales.height_measurements
 		self.obs_buf = torch.cat((self.obs_buf, heights), dim=-1)
 	# add noise if needed
-	# (3) 添加噪声
+	# (3) 噪声注入
 	if self.add_noise:
 		self.obs_buf += (2 * torch.rand_like(self.obs_buf) - 1) * self.noise_scale_vec
 ```
 
 - `(1)`：观测空间的不同物理量数值范围存在差异，通过`obs_scales`类对其进行缩放到相近的范围（归一化），便于神经网络学习。
   - 重力向量仅用于观测姿态，本身是单位向量，无需归一化。
-- `(2)`：观测的`heights[]`相比比奖励函数的`base_height[]`需要考虑传感器和基座之间的相对高度，故此处减0.5。
+- `(2)`：观测的`heights[]`相比比奖励函数的`base_height[]`需要考虑传感器和基座之间的相对高度，故此处减`0.5`。地形高度的采样测量方法将在后续章节讲解。
 - `(3)`：噪声注入是在训练时对所有观测量添加`[-1, 1)`均匀分布的噪声，以提高策略对传感器噪声的稳定性的方法，测试时关闭。
   - `torch.rand_like()`生成一个与 `self.obs_buf` 形状完全相同的张量，每个元素是在 `[0, 1)` 区间内均匀分布的随机数。
 
-观测缩放因子配置：
+物理仿真异常和策略网络输出动作异常都会导致异常的观测值，需要在训练过程中进行裁剪以保证训练稳定：
 
 ```python
-# 🔍 "obs_scales"
-# 📃 legged_robot_config.py
-# [157]
-class obs_scales:
-	lin_vel = 2.0
-	ang_vel = 0.25
-	dof_pos = 1.0
-	dof_vel = 0.05
-	height_measurements = 5.0
+# [79]
+def step(self, actions):
+    # ...
+    # return clipped obs, clipped states (None), rewards, dones and infos
+    # 获取裁剪范围参数
+    clip_obs = self.cfg.normalization.clip_observations
+    # 裁剪
+    self.obs_buf = torch.clip(self.obs_buf, -clip_obs, clip_obs)
+    # (1) 特权观测单独处理
+    if self.privileged_obs_buf is not None:
+        self.privileged_obs_buf = torch.clip(self.privileged_obs_buf, -clip_obs, clip_obs)
+	# ...
 ```
+
+- `(1)`：**特权观测**是针对复杂任务，在训练阶段为了降低学习难度，为策略网络提供的真实机器人无法感知的“上帝视角”信息。特权观测通常应用于师生架构，先开启特权观测训练一个性能上限较高的教师策略，再让学生策略在关闭特权观测的条件下模仿教师策略的行为，学会从有限的真实观测中推断特权信息。本项目仅仅提供了特权观测的接口，没有设计具体内容，也暂不在本系列涉及。
 
 ## 观测噪声
 
 `noise_scale_vec[]`由`_get_noise_scale_vec()`方法构建：
 
 ```python
-# 🔍 "noise_scale_vec"
 # 📃 legged_robot.py
 # [455]
 def _get_noise_scale_vec(self, cfg):
@@ -1076,12 +1197,35 @@ def _get_noise_scale_vec(self, cfg):
 
 - `(1)`：观测噪声幅值计算仍需乘以观测缩放因子，因为基础噪声比例是基于原始物理量而非观测空间给出的，这种解耦让参数更具可解释性，便于人为赋值。
 
-观测噪声参数配置：
+## 观测空间配置
+
+观测配置参数：
 
 ```python
-# 🔍 "cfg.noise"
 # 📃 legged_robot_config.py
+class env:
+    # ...
+    # [36]
+    # 观测维度
+    num_observations = 235
+    num_privileged_obs = None # if not None a priviledge_obs_buf will be returned by step() (critic obs for assymetric training). None is returned otherwise
+    # ...
+
+# [156]
+class normalization:
+	# 观测缩放因子
+    class obs_scales:
+        lin_vel = 2.0
+        ang_vel = 0.25
+        dof_pos = 1.0
+        dof_vel = 0.05
+        height_measurements = 5.0
+    # 观测裁剪范围
+    clip_observations = 100.
+    # ...
+
 # [166]
+# 观测噪声参数
 class noise:
 	add_noise = True
 	noise_level = 1.0 # scales other values
@@ -1094,7 +1238,12 @@ class noise:
 		height_measurements = 0.1
 ```
 
-## 指令
+自定义观测空间的基本步骤：
+
+1. 修改观测维度`num_observations`。
+2. 配置观测缩放因子`obs_scales`和观测噪声缩放因子`noise_scales`。
+3. 在`compute_observations()`方法中写入观测项拼接。
+4. 在`_get_noise_scale_vec()`方法中写入噪声处理。
 
 # 动作空间与控制器
 
@@ -1116,7 +1265,6 @@ class noise:
 `_compute_torques()`方法将动作空间的决策转换为关节力矩：
 
 ```python
-# 🔍 action, control
 # 📃 legged_robot.py
 # [353]
 def _compute_torques(self, actions):
@@ -1155,17 +1303,18 @@ def _compute_torques(self, actions):
   - **速度控制**：动作被解释为关节速度，比例项跟踪速度误差，微分项跟踪关节加速度（替代为相邻时间步速度差除以时间步长）。
   - **力矩控制**：动作被解释为关节力矩，直接输出到电机。
 
+## 控制器配置
+
 控制器参数配置：
 
 ```python
-# 🔍 "cfg.control"
 # 📃 legged_robot_config.py
 # [89]
 class control:
 	# 控制器类型
 	control_type = 'P' # P: position, V: velocity, T: torques
 	# PD Drive parameters:
-	# 各关节刚度（比例增益）
+	# (1) 各关节刚度（比例增益）
 	stiffness = {'joint_a': 10.0, 'joint_b': 15.}  # [N*m/rad]
 	# 各关节阻尼（微分增益）
 	damping = {'joint_a': 1.0, 'joint_b': 1.5}     # [N*m*s/rad]
@@ -1173,11 +1322,12 @@ class control:
 	# 动作缩放因子
 	action_scale = 0.5
 	# decimation: Number of control action updates @ sim DT per policy DT
-	# (1) 降采样因子
+	# (2) 降采样因子
 	decimation = 4
 ```
 
-- `(1)`：降采样因子表示策略网络的决策时间步长对应几倍的仿真时间步长，用于调节策略网络的决策频率。策略频率越高，任务响应延迟越低，但训练难度和计算负载也随之上升。适当的策略频率设置也有助于训练过程的稳定性。
+- `(1)`：关节刚度和阻尼通常由机器人单独的配置文件进行配置覆盖。
+- `(2)`：降采样因子表示策略网络的决策时间步长对应几倍的仿真时间步长，用于调节策略网络的决策频率。策略频率越高，任务响应延迟越低，但训练难度和计算负载也随之上升。适当的策略频率设置也有助于训练过程的稳定性。
 
 控制器参数处理：
 
@@ -1185,7 +1335,6 @@ class control:
 # 📃 legged_robot.py
 def init_buffers(self):
 	# ...
-	# 🔍 "control"
 	# [525]
 	# joint positions offsets and PD gains
 	# 初始化默认关节位置
@@ -1199,7 +1348,7 @@ def init_buffers(self):
 		found = False
 		# 与刚度参数匹配并分配PD控制器增益
 		for dof_name in self.cfg.control.stiffness.keys():
-			# 模糊匹配
+			# (1) 模糊匹配
 			if dof_name in name:
 				self.p_gains[i] = self.cfg.control.stiffness[dof_name]
 				self.d_gains[i] = self.cfg.control.damping[dof_name]
@@ -1214,13 +1363,14 @@ def init_buffers(self):
 
 # ...
 
-# 🔍 "control"
 # [728]
 def _parse_cfg(self, cfg):
 	# 决策时间步 = 降采样因子 * 仿真时间步
     self.dt = self.cfg.control.decimation * self.sim_params.dt
     # ...
 ```
+
+- `(1)`：在机器人描述文件中，关节通常由不同的前缀划分为不同的类型（例如横滚髋关节、俯仰髋关节、膝关节等），模糊匹配可以通过类型前缀对相应关节进行批量配置。
 
 # 仿真环境
 
