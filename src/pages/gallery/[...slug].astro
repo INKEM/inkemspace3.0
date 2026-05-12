@@ -1,0 +1,78 @@
+---
+import type { GetStaticPaths } from 'astro'
+import type { CollectionEntry } from 'astro:content'
+import MarkdownLayout from '@/layouts/MarkdownLayout.astro'
+import GalleryGrid from '@/components/gallery/GalleryGrid'
+import MarkdownWrapper from '@/components/MarkdownWrapper.astro'
+import { Comments } from '@/components/comment'
+import { getSortedGallery, slugify } from '@/utils/content'
+
+export const getStaticPaths = (async () => {
+  const allGallery = await getSortedGallery()
+
+  return allGallery.map((entry) => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }))
+}) satisfies GetStaticPaths
+
+interface Props {
+  entry: CollectionEntry<'gallery'>
+}
+
+const { entry } = Astro.props
+const { Content } = await entry.render()
+const { title, album, images, videos, date, comments } = entry.data
+
+const formattedDate = new Date(date).toLocaleDateString('zh-CN', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+})
+---
+
+<MarkdownLayout
+  title={title}
+  description={album}
+  mdTitle={title}
+  mdDescription={album}
+  mdSlug={`/gallery/${entry.slug}`}
+>
+  <div class="max-w-[1000px] mx-auto px-4 md:px-8 py-16">
+    <header class="mb-8">
+      <a href="/gallery" class="inline-flex items-center text-accent hover:underline mb-4">
+        ← 返回画廊
+      </a>
+      <h1 class="text-4xl font-bold text-primary mb-2">{title}</h1>
+      <p class="text-gray-600 dark:text-gray-400">
+        <a href={`/gallery/albums/${slugify(album)}`} class="hover:text-accent">
+          {album}
+        </a>
+        <span class="mx-2">·</span>
+        <span>{images.length} 张图片{videos.length > 0 && ` · ${videos.length} 个视频`}</span>
+        <span class="mx-2">·</span>
+        <time>{formattedDate}</time>
+      </p>
+    </header>
+
+    {entry.body.trim().length > 0 && (
+      <div class="mb-12">
+        <MarkdownWrapper>
+          <div class="prose dark:prose-invert max-w-full">
+            <Content />
+          </div>
+        </MarkdownWrapper>
+      </div>
+    )}
+
+    {(images.length > 0 || videos.length > 0) && (
+      <div class="mb-12">
+        <GalleryGrid client:load images={images} videos={videos} title="" />
+      </div>
+    )}
+
+    <div class="pt-8 border-t border-primary">
+      {comments !== false && <Comments />}
+    </div>
+  </div>
+</MarkdownLayout>

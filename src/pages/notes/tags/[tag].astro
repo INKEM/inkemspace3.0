@@ -1,0 +1,53 @@
+---
+import type { GetStaticPaths } from 'astro'
+import PageLayout from '@/layouts/PageLayout.astro'
+import NotesList from '@/components/notes/NotesList.astro'
+import { getAllNoteTags, getNotesByTag } from '@/utils/content'
+import SectionBlock from '@/components/SectionBlock.astro'
+
+export const getStaticPaths = (async () => {
+  const allNoteTags = await getAllNoteTags()
+
+  const paths = allNoteTags.map((tag) => {
+    return {
+      params: { tag: tag.slug },
+      props: { tagName: tag.name },
+    }
+  })
+
+  return paths
+}) satisfies GetStaticPaths
+
+interface Props {
+  tagName: string
+}
+
+const { tag } = Astro.params
+const { tagName } = Astro.props
+
+if (!tag) {
+  return Astro.redirect('/notes')
+}
+
+const notes = await getNotesByTag(tag)
+
+if (notes.length === 0) {
+  return Astro.redirect('/notes')
+}
+---
+
+<PageLayout>
+  <div class="max-w-[1100px] px-4 md:px-8 py-20 mx-auto">
+    <div class="mb-8">
+      <a href="/notes" class="inline-flex items-center text-accent hover:underline mb-4">
+        ← 返回杂记
+      </a>
+      <h1 class="text-3xl font-bold text-primary mb-2">标签：{tagName}</h1>
+      <p class="text-gray-600 dark:text-gray-400">共找到 {notes.length} 条杂记</p>
+    </div>
+
+    <SectionBlock title={`杂记列表 (${notes.length})`}>
+      <NotesList notes={notes} />
+    </SectionBlock>
+  </div>
+</PageLayout>

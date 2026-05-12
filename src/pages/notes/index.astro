@@ -1,0 +1,65 @@
+---
+import PageLayout from '@/layouts/PageLayout.astro'
+import NotesList from '@/components/notes/NotesList.astro'
+import PostPagination from '@/components/post/PostPagination.astro'
+import { getSortedNotesPaginated, getAllNoteTags } from '@/utils/content'
+import Highlight from '@/components/Highlight.astro'
+import SectionBlock from '@/components/SectionBlock.astro'
+import appConfig from '@/config.json'
+
+const perPage = appConfig.notes.perPage
+const { data, totalPages, currentPage, total } = await getSortedNotesPaginated(1, perPage)
+const allNoteTags = await getAllNoteTags()
+
+const getPageUrl = (page: number) => {
+  if (page === 1) return '/notes'
+  return `/notes/page/${page}`
+}
+---
+
+<PageLayout>
+  <div class="max-w-[1100px] px-4 md:px-8 py-20 mx-auto grid lg:grid-cols-[auto_300px] gap-10">
+    <div class="min-w-0">
+      <div class="mb-8">
+        <h1 class="text-4xl font-bold">
+          <Highlight>杂记</Highlight>
+        </h1>
+        <p>随笔、想法和碎片化的记录</p>
+      </div>
+
+      <SectionBlock title={`所有杂记 (${total} 条)`}>
+        <NotesList notes={data} />
+        {
+          totalPages > 1 && (
+            <PostPagination current={currentPage} total={totalPages} getPageUrl={getPageUrl} />
+          )
+        }
+      </SectionBlock>
+    </div>
+
+    <!-- 右侧栏：标签导航 -->
+    <div>
+      <aside class="md:sticky md:top-20 space-y-10">
+        <SectionBlock title="标签">
+          {allNoteTags.length === 0 ? (
+            <p class="text-sm text-gray-500">暂无标签</p>
+          ) : (
+            <div class="space-y-2">
+              {allNoteTags.map((tag) => (
+                <a
+                  href={`/notes/tags/${tag.slug}`}
+                  class="flex items-center justify-between text-sm hover:text-accent transition-colors"
+                >
+                  <span>{tag.name}</span>
+                  <span class="text-xs text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full">
+                    {tag.count}
+                  </span>
+                </a>
+              ))}
+            </div>
+          )}
+        </SectionBlock>
+      </aside>
+    </div>
+  </div>
+</PageLayout>

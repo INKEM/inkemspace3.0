@@ -65,6 +65,21 @@
       "icon": "icon-archive"
     },
     {
+      "name": "文章",
+      "link": "/posts",
+      "icon": "icon-file-list"
+    },
+    {
+      "name": "画廊",
+      "link": "/gallery",
+      "icon": "icon-t-box"
+    },
+    {
+      "name": "杂记",
+      "link": "/notes",
+      "icon": "icon-pen"
+    },
+    {
       "name": "关于",
       "link": "/about",
       "icon": "icon-ghost"
@@ -77,6 +92,12 @@
   ],
   "posts": {
     "perPage": 10
+  },
+  "notes": {
+    "perPage": 15
+  },
+  "gallery": {
+    "perPage": 12
   },
   "footer": {
     "startTime": "2025-04-09T00:00:00Z"

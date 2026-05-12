@@ -13,7 +13,7 @@ const { remarkPluginFrontmatter } = await entry.render()
 ---
 
 <a class="block relative py-8 focus-visible:outline-0" href={`/posts/${entry.slug}`}>
-  <PostCardHoverOverlay client:only="react" />
+  <PostCardHoverOverlay client:only="react" slug={entry.slug} />
   <h2 class="relative text-2xl font-bold">
     {entry.data.title}
     {

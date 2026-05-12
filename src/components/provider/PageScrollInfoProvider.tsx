@@ -1,5 +1,15 @@
 import { useLayoutEffect, useRef } from 'react'
-import { throttle } from 'lodash-es'
+
+function throttle(fn: Function, delay: number, _opts?: any) {
+  let lastTime = 0
+  return function (this: any, ...args: any[]) {
+    const now = Date.now()
+    if (now - lastTime >= delay) {
+      lastTime = now
+      fn.apply(this, args)
+    }
+  }
+}
 import { useSetAtom } from 'jotai'
 import { pageScrollLocationAtom, pageScrollDirectionAtom } from '@/store/scrollInfo'
 

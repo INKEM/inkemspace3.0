@@ -45,9 +45,42 @@ const friendsCollection = defineCollection({
   }),
 })
 
+const galleryCollection = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title: z.string(),
+    album: z.string(),
+    images: z.array(z.object({
+      url: z.string().url(),
+      alt: z.string().optional(),
+      description: z.string().optional(),
+    })).default([]),
+    videos: z.array(z.object({
+      url: z.string().url(),
+      cover: z.string().url().optional(),
+      title: z.string().optional(),
+    })).default([]),
+    date: z.date(),
+    draft: z.boolean().default(false),
+    comments: z.boolean().default(true),
+  }),
+})
+
+const notesCollection = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title: z.string(),
+    tags: z.array(z.string()).default([]),
+    date: z.date(),
+    draft: z.boolean().default(false),
+  }),
+})
+
 export const collections = {
   posts: postsCollection,
   projects: projectsCollection,
   spec: specCollection,
   friends: friendsCollection,
+  gallery: galleryCollection,
+  notes: notesCollection,
 }

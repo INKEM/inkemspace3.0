@@ -1,0 +1,37 @@
+---
+import NoteCard from './NoteCard.astro'
+import type { CollectionEntry } from 'astro:content'
+
+interface Props {
+  notes: CollectionEntry<'notes'>[]
+}
+
+const { notes } = Astro.props
+---
+
+<div class="notes-timeline">
+  {notes.length === 0 ? (
+    <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+      <p>暂无杂记内容</p>
+    </div>
+  ) : (
+    notes.map((note) => <NoteCard note={note} />)
+  )}
+</div>
+
+<style is:global>
+  .notes-timeline {
+    position: relative;
+    padding-left: 1.25rem;
+  }
+
+  .notes-timeline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.375rem;
+    bottom: 0;
+    width: 2px;
+    background: rgb(var(--color-accent) / 0.25);
+  }
+</style>

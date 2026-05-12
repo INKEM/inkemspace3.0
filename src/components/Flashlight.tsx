@@ -5,18 +5,9 @@ export function Flashlight() {
   const [cursorY, setCursorY] = useState(0)
   const isMobile = !window.matchMedia('(hover: hover)').matches
 
-  if (isMobile) {
-    return null
-  }
-
-  const backgroundImage = `radial-gradient(
-    circle 16vmax at ${cursorX}px ${cursorY}px,
-    rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, 0.5) 80%,
-    rgba(0, 0, 0, 0.8) 100%
-  )`
-
   useLayoutEffect(() => {
+    if (isMobile) return
+
     const handleMouseMove = (event: MouseEvent) => {
       setCursorX(event.clientX)
       setCursorY(event.clientY)
@@ -27,7 +18,18 @@ export function Flashlight() {
     return () => {
       document.removeEventListener('mousemove', handleMouseMove)
     }
-  }, [])
+  }, [isMobile])
+
+  if (isMobile) {
+    return null
+  }
+
+  const backgroundImage = `radial-gradient(
+    circle 16vmax at ${cursorX}px ${cursorY}px,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.5) 80%,
+    rgba(0, 0, 0, 0.8) 100%
+  )`
 
   return (
     <div

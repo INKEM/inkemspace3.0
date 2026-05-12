@@ -1,0 +1,86 @@
+---
+import type { GetStaticPaths } from 'astro'
+import PageLayout from '@/layouts/PageLayout.astro'
+import PostList from '@/components/post/PostList.astro'
+import PostPagination from '@/components/post/PostPagination.astro'
+import Highlight from '@/components/Highlight.astro'
+import SectionBlock from '@/components/SectionBlock.astro'
+import TagList from '@/components/TagList.astro'
+import CategoryList from '@/components/CategoryList.astro'
+import { getSortedPostsPaginated, getHotTags, getAllCategories, getAllTags } from '@/utils/content'
+import appConfig from '@/config.json'
+
+export const getStaticPaths = (async () => {
+  const perPage = appConfig.posts.perPage
+  const { totalPages } = await getSortedPostsPaginated(1, perPage)
+
+  return Array.from({ length: totalPages - 1 }, (_, i) => {
+    const page = i + 2
+    return {
+      params: { page: String(page) },
+      props: { currentPage: page, totalPages },
+    }
+  })
+}) satisfies GetStaticPaths
+
+interface Props {
+  currentPage: number
+  totalPages: number
+}
+
+const { currentPage, totalPages } = Astro.props
+const perPage = appConfig.posts.perPage
+
+const { data } = await getSortedPostsPaginated(currentPage, perPage)
+
+const hotTags = await getHotTags()
+const allTags = await getAllTags()
+const allCategories = await getAllCategories()
+
+const getPageUrl = (page: number) => {
+  if (page === 1) return '/posts'
+  return `/posts/page/${page}`
+}
+---
+
+<PageLayout>
+  <div class="max-w-[1100px] px-4 md:px-8 py-20 mx-auto grid lg:grid-cols-[auto_300px] gap-10">
+    <div class="min-w-0">
+      <header class="space-y-4 mb-8">
+        <h1 class="text-4xl font-bold">
+          <Highlight>文章</Highlight>
+        </h1>
+        <p>第 {currentPage} 页</p>
+      </header>
+
+      <SectionBlock title="最新发布">
+        <PostList posts={data} />
+        {
+          totalPages > 1 && (
+            <PostPagination current={currentPage} total={totalPages} getPageUrl={getPageUrl} />
+          )
+        }
+      </SectionBlock>
+    </div>
+
+    <div>
+      <aside class="md:sticky md:top-20 space-y-10">
+        <SectionBlock title="分类">
+          <CategoryList categories={allCategories} />
+        </SectionBlock>
+        <SectionBlock title="热门标签">
+          <TagList tags={hotTags} />
+          {
+            allTags.length > hotTags.length && (
+              <div class="mt-2 text-right">
+                <a class="text-sm text-secondary hover:text-accent" href="/tags">
+                  更多标签 <i class="iconfont icon-arrow-right" />
+                </a>
+              </div>
+            )
+          }
+        </SectionBlock>
+      </aside>
+    </div>
+  </div>
+</PageLayout>

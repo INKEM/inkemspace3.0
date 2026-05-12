@@ -1,0 +1,127 @@
+---
+import { slugify, truncateText } from '@/utils/content'
+import type { CollectionEntry } from 'astro:content'
+
+interface Props {
+  note: CollectionEntry<'notes'>
+}
+
+const { note } = Astro.props
+const { title, tags, date } = note.data
+
+let excerpt = ''
+if (note.body) {
+  const plainText = note.body
+    .replace(/#+\s+/g, '')
+    .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
+    .replace(/[*_`\[\](){}#]/g, '')
+    .replace(/\n+/g, ' ')
+    .trim()
+  excerpt = truncateText(plainText, 150)
+}
+
+const formattedDate = new Date(date).toLocaleDateString('zh-CN', {
+  month: 'short',
+  day: 'numeric',
+})
+
+const noteSlug = note.slug
+---
+
+<article class="timeline-entry">
+  <div class="timeline-dot"></div>
+  <time datetime={date.toISOString()}>{formattedDate}</time>
+  <a href={`/notes/${noteSlug}`} class="entry-title">
+    <h3>{title}</h3>
+  </a>
+  {excerpt && (
+    <p class="entry-excerpt">{excerpt}</p>
+  )}
+  <div class="entry-tags">
+    {tags.map((tag) => (
+      <a href={`/notes/tags/${slugify(tag)}`}>
+        {tag}
+      </a>
+    ))}
+  </div>
+</article>
+
+<style is:global>
+  .timeline-entry {
+    position: relative;
+    padding-bottom: 1.5rem;
+  }
+
+  .timeline-entry:last-child {
+    padding-bottom: 0;
+  }
+
+  .timeline-dot {
+    position: absolute;
+    left: -1.625rem;
+    top: 0.35rem;
+    width: 0.75rem;
+    height: 0.75rem;
+    border: 2px solid rgb(var(--color-accent));
+    border-radius: 50%;
+    background: rgb(var(--color-bg-primary));
+    z-index: 1;
+  }
+
+  .timeline-entry time {
+    display: block;
+    color: rgb(var(--color-accent));
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .entry-title {
+    display: block;
+    margin-top: 0.125rem;
+    color: rgb(var(--color-text-primary));
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .entry-title h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+
+  .entry-title:hover {
+    color: rgb(var(--color-accent));
+  }
+
+  .entry-excerpt {
+    margin-top: 0.375rem;
+    font-size: 0.875rem;
+    color: rgb(var(--color-text-secondary));
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .entry-tags {
+    margin-top: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+
+  .entry-tags a {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    font-size: 0.75rem;
+    background: rgb(var(--color-accent) / 0.15);
+    color: rgb(var(--color-accent));
+    border-radius: 0.25rem;
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+  }
+
+  .entry-tags a:hover {
+    opacity: 0.8;
+  }
+</style>

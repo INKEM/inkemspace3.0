@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
 
-export function PostCardHoverOverlay() {
+export function PostCardHoverOverlay({ slug }: { slug: string }) {
   const ref = useRef<HTMLDivElement>(null)
   const [enter, setEnter] = useState(false)
 
@@ -48,7 +48,7 @@ export function PostCardHoverOverlay() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             layout
-            layoutId="post-card-hover-overlay"
+            layoutId={`post-card-hover-${slug}`}
           ></motion.div>
         )}
       </AnimatePresence>

@@ -1,0 +1,83 @@
+---
+import GalleryList from '../gallery/GalleryList.astro'
+import type { CollectionEntry } from 'astro:content'
+
+interface Props {
+  galleries: CollectionEntry<'gallery'>[]
+  limit?: number
+}
+
+const { galleries, limit = 6 } = Astro.props
+
+const limitedGalleries = galleries.slice(0, limit)
+---
+
+<div class="gallery-preview-section">
+  <div class="section-header">
+    <h2 class="section-title">画廊</h2>
+    {galleries.length > limit && (
+      <a href="/gallery" class="view-all-link">
+        全部相册 →
+      </a>
+    )}
+  </div>
+
+  <GalleryList galleries={limitedGalleries} />
+
+  {galleries.length === 0 && (
+    <div class="empty-state">
+      <p>暂无画廊内容</p>
+    </div>
+  )}
+</div>
+
+<style is:global>
+  .gallery-preview-section {
+    margin: 3rem 0;
+    padding-top: 3rem;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  :global([data-theme='dark']) .gallery-preview-section {
+    border-top-color: #374151;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: rgb(var(--color-accent));
+    margin: 0;
+  }
+
+  .view-all-link {
+    color: rgb(var(--color-accent));
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+  }
+
+  .view-all-link:hover {
+    color: rgb(var(--color-accent) / 0.8);
+  }
+
+  :global([data-theme='dark']) .view-all-link {
+    color: rgb(var(--color-accent));
+  }
+
+  :global([data-theme='dark']) .view-all-link:hover {
+    color: rgb(var(--color-accent) / 0.8);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: #9ca3af;
+  }
+</style>

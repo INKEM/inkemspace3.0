@@ -1,0 +1,57 @@
+---
+import type { GetStaticPaths } from 'astro'
+import PageLayout from '@/layouts/PageLayout.astro'
+import GalleryList from '@/components/gallery/GalleryList.astro'
+import PostPagination from '@/components/post/PostPagination.astro'
+import Highlight from '@/components/Highlight.astro'
+import { getSortedGalleryPaginated } from '@/utils/content'
+import appConfig from '@/config.json'
+
+export const getStaticPaths = (async () => {
+  const perPage = appConfig.gallery.perPage
+  const { totalPages } = await getSortedGalleryPaginated(1, perPage)
+
+  return Array.from({ length: totalPages - 1 }, (_, i) => {
+    const page = i + 2
+    return {
+      params: { page: String(page) },
+      props: { currentPage: page, totalPages },
+    }
+  })
+}) satisfies GetStaticPaths
+
+interface Props {
+  currentPage: number
+  totalPages: number
+}
+
+const { currentPage, totalPages } = Astro.props
+const perPage = appConfig.gallery.perPage
+
+const { data } = await getSortedGalleryPaginated(currentPage, perPage)
+const getPageUrl = (page: number) => {
+  if (page === 1) return '/gallery'
+  return `/gallery/page/${page}`
+}
+---
+
+<PageLayout>
+  <div class="max-w-[1100px] px-4 md:px-8 py-20 mx-auto">
+    <div class="mb-8">
+      <h1 class="text-4xl font-bold">
+        <Highlight>画廊</Highlight>
+      </h1>
+      <p>第 {currentPage} 页</p>
+    </div>
+
+    <GalleryList galleries={data} />
+
+    {
+      totalPages > 1 && (
+        <div class="mt-12">
+          <PostPagination current={currentPage} total={totalPages} getPageUrl={getPageUrl} />
+        </div>
+      )
+    }
+  </div>
+</PageLayout>

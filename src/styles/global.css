@@ -3,6 +3,7 @@
 @import './markdown.css';
 @import './signature.css';
 @import './swup.css';
+@import './swup-safe.css';
 
 @font-face {
   font-family: 'Atkinson';

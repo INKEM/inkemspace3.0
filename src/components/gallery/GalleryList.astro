@@ -1,0 +1,36 @@
+---
+import GalleryCard from './GalleryCard.astro'
+import type { CollectionEntry } from 'astro:content'
+
+interface Props {
+  galleries: CollectionEntry<'gallery'>[]
+}
+
+const { galleries } = Astro.props
+---
+
+<div class="gallery-list">
+  {galleries.map((gallery) => (
+    <GalleryCard gallery={gallery} />
+  ))}
+</div>
+
+<style is:global>
+  .gallery-list {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+
+  @media (max-width: 768px) {
+    .gallery-list {
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+  }
+
+  @media (max-width: 640px) {
+    .gallery-list {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

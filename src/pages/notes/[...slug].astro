@@ -1,0 +1,85 @@
+---
+import type { GetStaticPaths } from 'astro'
+import MarkdownLayout from '@/layouts/MarkdownLayout.astro'
+import { getCollection } from 'astro:content'
+import { slugify } from '@/utils/content'
+import { Comments } from '@/components/comment'
+
+export const getStaticPaths = (async () => {
+  const notes = await getCollection('notes')
+
+  return notes.map((note) => ({
+    params: { slug: note.slug },
+    props: { note },
+  }))
+}) satisfies GetStaticPaths
+
+interface Props {
+  note: any
+}
+
+const { note } = Astro.props
+const { Content } = await note.render()
+
+const { title, tags, date } = note.data
+
+const formattedDate = new Date(date).toLocaleDateString('zh-CN', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+})
+---
+
+<MarkdownLayout
+  title={title}
+  description={title}
+  mdTitle={title}
+  mdDescription={tags.join(', ')}
+  mdSlug={`/notes/${note.slug}`}
+>
+  <article class="max-w-[800px] px-4 md:px-8 py-20 mx-auto">
+    <header class="mb-8">
+      <a href="/notes" class="inline-flex items-center text-accent hover:underline mb-4">
+        ← 返回杂记
+      </a>
+      <h1 class="text-4xl font-bold text-primary mb-4">{title}</h1>
+      <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-primary">
+        <time class="text-gray-600 dark:text-gray-400">
+          {formattedDate}
+        </time>
+        <div class="flex flex-wrap gap-2">
+          {tags.map((tag: string) => (
+            <a
+              href={`/notes/tags/${slugify(tag)}`}
+              class="px-3 py-1 text-sm bg-accent/10 text-accent rounded hover:bg-accent/20 transition-colors"
+            >
+              {tag}
+            </a>
+          ))}
+        </div>
+      </div>
+    </header>
+
+    <div class="prose dark:prose-invert max-w-full">
+      <Content />
+    </div>
+
+    <div class="mt-12 pt-8 border-t border-primary space-y-6">
+      <Comments />
+    </div>
+  </article>
+</MarkdownLayout>
+
+<style is:global>
+  .prose a {
+    @apply text-accent hover:underline;
+  }
+
+  .prose code {
+    @apply bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded;
+  }
+
+  .prose pre {
+    @apply bg-gray-900 dark:bg-gray-950 text-gray-100 p-4 rounded-lg overflow-x-auto;
+  }
+</style>

@@ -1,0 +1,91 @@
+---
+import PostList from '../post/PostList.astro'
+import NotesList from '../notes/NotesList.astro'
+import type { CollectionEntry } from 'astro:content'
+
+interface Props {
+  posts: CollectionEntry<'posts'>[]
+  notes: CollectionEntry<'notes'>[]
+  postLimit?: number
+  noteLimit?: number
+}
+
+const { posts, notes, postLimit = 5, noteLimit = 5 } = Astro.props
+
+const limitedPosts = posts.slice(0, postLimit)
+const limitedNotes = notes.slice(0, noteLimit)
+---
+
+<div class="home-content-grid">
+  <div class="content-column posts-column">
+    <div class="section-header">
+      <h2 class="section-title">最新文章</h2>
+      <a href="/posts" class="section-link">全部文章 →</a>
+    </div>
+    <PostList posts={limitedPosts} />
+  </div>
+
+  <div class="content-column notes-column">
+    <div class="section-header">
+      <h2 class="section-title">最新杂记</h2>
+      <a href="/notes" class="section-link">全部杂记 →</a>
+    </div>
+    <NotesList notes={limitedNotes} />
+  </div>
+</div>
+
+<style is:global>
+  .home-content-grid {
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: 2fr 1fr;
+    margin: 2rem 0;
+  }
+
+  @media (max-width: 768px) {
+    .home-content-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .content-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: rgb(var(--color-accent));
+    margin: 0;
+  }
+
+  .section-link {
+    color: rgb(var(--color-accent));
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: color 0.3s ease;
+    white-space: nowrap;
+  }
+
+  .section-link:hover {
+    color: rgb(var(--color-accent) / 0.8);
+  }
+
+  :global([data-theme='dark']) .section-link {
+    color: rgb(var(--color-accent));
+  }
+
+  :global([data-theme='dark']) .section-link:hover {
+    color: rgb(var(--color-accent) / 0.8);
+  }
+</style>

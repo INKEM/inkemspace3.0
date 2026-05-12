@@ -11,9 +11,8 @@ export function rehypeLink() {
           rel: 'noopener noreferrer',
           target: '_blank',
         }
-        parent.children[index] = node
         const icon = h('i', { class: 'iconfont icon-external-link' })
-        parent.children.splice(index + 1, 0, icon)
+        node.children.push(icon)
       }
     })
   }
