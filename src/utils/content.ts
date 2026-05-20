@@ -56,16 +56,22 @@ export async function getSortedPostsPaginated(page: number, perPage: number) {
 }
 
 // 获取所有文章的字数
+async function countWordsFromRender(entries: any[]) {
+  const results = await Promise.all(entries.map((e) => e.render()))
+  return results.reduce((count, r) => count + (r.remarkPluginFrontmatter?.words || 0), 0)
+}
+
 export async function getAllPostsWordCount() {
   const allPosts = await getAllPosts()
+  return countWordsFromRender(allPosts)
+}
 
-  return allPosts.reduce((count, post) => {
-    const text = post.body
-      .replace(/[#*_`\[\](){}>\-!|~]/g, '')
-      .replace(/\s+/g, ' ')
-      .trim()
-    return count + (text ? text.split(' ').length : 0)
-  }, 0)
+export async function getTotalWordCount() {
+  const postCount = await getAllPostsWordCount()
+  const allNotes = await getCollection('notes', ({ data }) => {
+    return import.meta.env.PROD ? data.draft !== true : true
+  })
+  return postCount + await countWordsFromRender(allNotes)
 }
 
 // 转换为 URL 安全的 slug，删除点，空格转为短横线，大写转为小写

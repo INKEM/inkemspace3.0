@@ -1,7 +1,7 @@
 ---
 import { ThemeSwitch } from './ThemeSwitch'
 import { author, footer } from '@/config.json'
-import { getAllPostsWordCount } from '@/utils/content'
+import { getTotalWordCount } from '@/utils/content'
 import { RunningDays } from './RunningDays'
 import Link from './Link.astro'
 
@@ -9,7 +9,7 @@ const sinceYear = new Date(footer.startTime).getFullYear()
 const thisYear = new Date().getFullYear()
 const copyDate = sinceYear === thisYear ? thisYear : `${sinceYear} - ${thisYear}`
 
-const wordCount = await getAllPostsWordCount()
+const wordCount = await getTotalWordCount()
 
 const wordCountStr = (wordCount / 1000).toFixed(1) + 'k'
 ---
