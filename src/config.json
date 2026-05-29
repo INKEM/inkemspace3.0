@@ -88,6 +88,11 @@
       "name": "友链",
       "link": "/friends",
       "icon": "icon-hearts"
+    },
+    {
+      "name": "开往",
+      "link": "https://www.travellings.cn/go.html",
+      "icon": "icon-rocket"
     }
   ],
   "posts": {
