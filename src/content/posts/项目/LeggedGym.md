@@ -165,7 +165,7 @@ Auto DL是一个云算力租赁平台，若手头显卡性能较差可以考虑�
 
 基础使用教程推荐看B站《深度学习炼丹必修！AutoDL 租 GPU 全流程教学，跑通深度学习项目》
 
-::bilibili{ # BV1s2YdzNESZ}
+::bilibili{#BV1s2YdzNESZ}
 
 Auto DL 的环境配置方法基本不变，本节以博主自身实践为例介绍在Auto DL上需要注意的几点。
 
