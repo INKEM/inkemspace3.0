@@ -61,7 +61,7 @@ $$
 
 ![](https://inkem-1306784622.cos.accelerate.myqcloud.com/blog/pic/Pasted%20image%2020260529192854.png)
 
-标准的双层优化流程是先解决下层的优化问题，再解决上层的优化问题。但是每次更新上层参数前都等待下层强化学习收敛会耗费大量时间，为此ReActor采用了基于**双时间尺度近似**（Two-Timescale Approximation，TTSA）的**单循环**（Single Loop）双层优化算法。简而言之，上层参数
+标准的双层优化流程是先解决下层的优化问题，再解决上层的优化问题。但是每次更新上层参数前都等待下层强化学习收敛会耗费大量时间，为此ReActor采用了基于**双时间尺度近似**（Two-Timescale Approximation，TTSA）的**单循环**（Single Loop）双层优化算法。简而言之，上层参数可以在强化学习每轮迭代之后都进行调整，但是采用更小的学习率使其更新速度稍慢，避免系统震荡。
 
 上层参数的更新公式为
 
