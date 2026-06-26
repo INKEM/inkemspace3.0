@@ -40,10 +40,10 @@ category: 具身智能
 轮足机器人在非结构化环境中作业时，由于传感器噪声和物理限制，无法获得完整的环境状态，同时必须满足安全性约束才能可靠部署到现实世界，因此使用**带约束的部分可观测马尔可夫决策过程**（Constrained Partially Observable MDP，C-POMDP）对问题进行建模
 
 $$
-\begin{gather}
+\begin{gathered}
 \max\mathbb E_\pi\left[\sum^\infty_{t=0}\gamma^tR(\mathbf s_t,\mathbf a_t,\mathbf s_{t+1})\right]\\
 \text{s.t.}\quad\mathbb E_\pi\left[\sum^\infty_{t=0}\gamma^tC_i(\mathbf s_t,\mathbf a_t,\mathbf s_{t+1})\right]\leq\delta_i,\forall i\in\{1,\cdots,k\}
-\end{gather}
+\end{gathered}
 $$
 
 - $R$：奖励函数。
@@ -197,14 +197,14 @@ $$
 
 由于不同技能的目标不同，奖励函数和约束函数也在技能之间采取部分共享的差异化设计。对于全向移动（i）、爬高台（ii）和摔倒恢复（iii）三个技能，奖励与约束的设计如下表所示。
 
-| 奖励或约束       | 公式                                                                                                                                                           | 适用技能 | 备注                                                                                                           |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------- |
-| 速度追踪奖励     | $\exp(-\|\text{cmd}_{xy,t}-\mathbf v_{xy,t}\|^2/\sigma^2)$                                                                                                     | i,ii     | 无。                                                                                                           |
-| 角速度追踪奖励   | $\exp(-\|\text{cmd}_{\omega,t}-\omega_{z,t}\|^2/\sigma^2)$                                                                                                     | i        | 只有全向移动需要追踪角速度，爬高台过程不需要复杂的自旋。                                                       |
-| 重力奖励         | $\exp(-\angle(\mathbf g^b_t,\mathbf g^\text{world})/\sigma^2)$                                                                                                 | iii      | 衡量机器人基座姿态是否摆正。                                                                                   |
-| 关节位置奖励     | $\begin{gather}\exp(-\|\mathbf q-\mathbf q_\text{stand}\|^2/\sigma^2)\\\text{if}\lvert\angle(\mathbf g^b_t,\mathbf g^\text{world})\rvert<\epsilon\end{gather}$ | iii      | 在姿态摆正的基础之上要求腿部关节恢复到预定义的站立姿态。                                                       |
-| 直流电机力矩约束 | $\sum^{16}_{i=1}\mathbf1_{\lvert\tau^i_t\rvert>\tau^i_\text{limit}}$                                                                                           | i,ii,iii | 统计当前时刻超出电机安全输出能力的关节数量。                                                                   |
-| 碰撞约束         | $\sum_ic^i_t,i=\text{thigh,calf}$                                                                                                                              | i,ii     | 惩罚大腿和小腿与环境发生碰撞，让机器人尽量用轮子接触地形。摔倒恢复过程的腿部碰撞无法避免，因此不需要碰撞约束。 |
+| 奖励或约束       | 公式                                                                                                                                                               | 适用技能 | 备注                                                                                                           |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | -------------------------------------------------------------------------------------------------------------- |
+| 速度追踪奖励     | $\exp(-\|\text{cmd}_{xy,t}-\mathbf v_{xy,t}\|^2/\sigma^2)$                                                                                                         | i,ii     | 无。                                                                                                           |
+| 角速度追踪奖励   | $\exp(-\|\text{cmd}_{\omega,t}-\omega_{z,t}\|^2/\sigma^2)$                                                                                                         | i        | 只有全向移动需要追踪角速度，爬高台过程不需要复杂的自旋。                                                       |
+| 重力奖励         | $\exp(-\angle(\mathbf g^b_t,\mathbf g^\text{world})/\sigma^2)$                                                                                                     | iii      | 衡量机器人基座姿态是否摆正。                                                                                   |
+| 关节位置奖励     | $\begin{gathered}\exp(-\|\mathbf q-\mathbf q_\text{stand}\|^2/\sigma^2)\\\text{if}\lvert\angle(\mathbf g^b_t,\mathbf g^\text{world})\rvert<\epsilon\end{gathered}$ | iii      | 在姿态摆正的基础之上要求腿部关节恢复到预定义的站立姿态。                                                       |
+| 直流电机力矩约束 | $\sum^{16}_{i=1}\mathbf1_{\lvert\tau^i_t\rvert>\tau^i_\text{limit}}$                                                                                               | i,ii,iii | 统计当前时刻超出电机安全输出能力的关节数量。                                                                   |
+| 碰撞约束         | $\sum_ic^i_t,i=\text{thigh,calf}$                                                                                                                                  | i,ii     | 惩罚大腿和小腿与环境发生碰撞，让机器人尽量用轮子接触地形。摔倒恢复过程的腿部碰撞无法避免，因此不需要碰撞约束。 |
 
 针对直流电机力矩约束，MUJICA未简单采用统一的力矩限制，而是结合官方电机手册建立了精确的电机力矩-速度-位置关系模型，力矩限制将随电机运行状态而变化。
 

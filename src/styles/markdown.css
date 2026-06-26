@@ -54,6 +54,13 @@
   @apply px-2 py-1 rounded bg-secondary text-sm font-semibold;
 }
 
+/* KaTeX display math horizontal scroll */
+.markdown .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+}
+
 .markdown .code-block {
   @apply relative mt-10 mb-5 bg-secondary rounded-lg;
 }
