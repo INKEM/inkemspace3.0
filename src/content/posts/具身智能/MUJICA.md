@@ -1,10 +1,12 @@
 ---
 title: 【MUJICA】面向轮足机器人的统一多技能控制框架
 date: 2026-06-26
-summary: 重定向和跟踪不是两个独立的问题，而是一个协同优化的整体。
-tags: [MUJICA, 盲控策略, 安全强化学习, 分层强化学习, 非对称Actor-Critic, PPO, 论文精读]
+summary: 引入状态估计器和精确电机约束训练盲控策略，技能选择器实现多技能自主切换。
+tags: [MUJICA, 盲控策略, 安全强化学习, 分层强化学习, 非对称Actor-Critic, PPO, 轮足机器人, 论文精读]
 category: 具身智能
 ---
+
+::bilibili{#BV1Dm5Y6JEFV}
 
 - 论文标题：_MUJICA: Multi-skill Unified Joint Integration of Control Architecture for Wheeled-Legged Robots_
 - 发表时间：2026.05.13

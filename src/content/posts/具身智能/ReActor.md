@@ -2,7 +2,7 @@
 title: 【ReActor】面向物理感知运动重定向的强化学习
 date: 2026-05-30
 summary: 重定向和跟踪不是两个独立的问题，而是一个协同优化的整体。
-tags: [ReActor, 运动重定向, 强化学习, 论文精读]
+tags: [ReActor, 运动重定向, 强化学习, 人形机器人, 论文精读]
 category: 具身智能
 ---
 
@@ -11,6 +11,7 @@ category: 具身智能
 - 论文标题：_ReActor: Reinforcement Learning for Physics-Aware Motion Retargeting_
 - 发表时间：2026.05.07
 - 论文链接：https://arxiv.org/abs/2605.06593
+- 补充知识：运动重定向
 
 # 一、运动重定向问题
 
