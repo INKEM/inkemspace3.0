@@ -157,10 +157,10 @@ $$
 将后面两项中的梯度展开
 
 $$
-\begin{split}
-&\nabla_\vartheta Q_\Omega(s',\omega)=\sum_a\pi_{\omega,\theta}(a|s')\sum_{s''}\gamma P(s''|s',a)\cdot\nabla_\vartheta U(\omega,s'')&\\
-&\nabla_\vartheta V_\Omega(s')=\sum_{\omega'}\pi_\Omega(\omega'|s')\sum_a\pi_{\omega',\theta}(a|s')\sum_{s''}\gamma P(s''|s',a)\cdot\nabla_\vartheta U(\omega',s'')&
-\end{split}
+\begin{gathered}
+\nabla_\vartheta Q_\Omega(s',\omega)=\sum_a\pi_{\omega,\theta}(a|s')\sum_{s''}\gamma P(s''|s',a)\cdot\nabla_\vartheta U(\omega,s'')&\\
+\nabla_\vartheta V_\Omega(s')=\sum_{\omega'}\pi_\Omega(\omega'|s')\sum_a\pi_{\omega',\theta}(a|s')\sum_{s''}\gamma P(s''|s',a)\cdot\nabla_\vartheta U(\omega',s'')&
+\end{gathered}
 $$
 
 由于公式太长，博主不列出将$\nabla_\vartheta Q_\Omega(s',\omega)$和$\nabla_\vartheta V_\Omega(s')$代回$\nabla_\vartheta U(\omega,s')$的完整结果。在代回后，如果将选项$\omega$未终止的情况视为$\omega'=\omega$，我们可以得到针对$\nabla_\vartheta U(\omega',s'')$的概率分布也是增强状态空间$\mathcal S\times\Omega$下的转移概率，因此$\nabla_\vartheta U(\omega,s')$可简化为
