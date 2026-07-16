@@ -4,6 +4,7 @@ import { HeadGradient } from '@/components/head-gradient'
 import Footer from '@/components/footer/Footer.astro'
 import { Header } from '@/components/header/Header'
 import { Provider } from '@/components/provider/Provider'
+import { MermaidRenderer } from '@/components/post/MermaidRenderer'
 
 interface Props {
   title: string
@@ -31,6 +32,7 @@ const { title, description, image, mdTitle, mdDescription, mdSlug } = Astro.prop
     <HeadGradient client:idle />
     <div class="swup-transition-fade">
       <slot />
+      <MermaidRenderer client:idle />
     </div>
   </main>
   <Footer />

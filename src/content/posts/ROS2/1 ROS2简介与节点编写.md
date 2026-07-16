@@ -40,7 +40,25 @@ category: ROS2
 - **节点**（Node）：功能包内部的可执行程序，是实现功能包功能的最小通信单元；
 - **通信接口**（Interface）：节点间进行数据交换的方式，包括话题、服务、动作和参数四种类型（后续篇章介绍）。
 
-![|500](https://inkem-1306784622.cos.accelerate.myqcloud.com/blog/pic/Pasted%20image%2020260314201457.png)
+```mermaid
+graph LR
+	subgraph "工作空间（巡逻小车）"
+		direction LR
+		subgraph 功能包
+			direction TB
+			A[节点] ---|通信接口| B[节点] --- C[节点]
+		end
+		subgraph 避障功能
+			direction TB
+			D[激光雷达] -->|点云图| E[障碍判断] -->|前进/停车| F[控制器]
+		end
+		subgraph ...
+			direction TB
+			G[节点]
+		end
+		功能包 --- 避障功能 --- ...
+	end
+```
 
 ---
 

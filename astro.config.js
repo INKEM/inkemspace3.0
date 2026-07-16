@@ -1,5 +1,6 @@
 import { defineConfig } from 'astro/config'
 import { remarkReadingTime } from './src/plugins/remarkReadingTime'
+import { rehypeMermaid } from './src/plugins/rehypeMermaid'
 import { rehypeCodeBlock } from './src/plugins/rehypeCodeBlock'
 import { rehypeTableBlock } from './src/plugins/rehypeTableBlock'
 import { rehypeCodeHighlight } from './src/plugins/rehypeCodeHighlight'
@@ -42,6 +43,7 @@ export default defineConfig({
       rehypeLink,
       rehypeImage,
       rehypeHeading,
+      rehypeMermaid,
       rehypeCodeBlock,
       rehypeCodeHighlight,
       rehypeTableBlock,

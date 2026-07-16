@@ -170,3 +170,11 @@
 .markdown h4 + * {
   @apply mt-0;
 }
+
+.markdown .mermaid {
+  @apply my-5 flex justify-center overflow-x-auto;
+}
+
+.markdown .mermaid svg {
+  @apply max-w-full;
+}
