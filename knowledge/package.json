@@ -2,6 +2,7 @@
   "name": "knowledge",
   "version": "0.0.0",
   "private": true,
+  "packageManager": "pnpm@9.15.9",
   "scripts": {
     "docusaurus": "docusaurus",
     "start": "docusaurus start",
@@ -47,5 +48,10 @@
   },
   "engines": {
     "node": ">=20.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "memfs": "4.72.1"
+    }
   }
 }
