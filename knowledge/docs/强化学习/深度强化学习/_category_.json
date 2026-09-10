@@ -1,0 +1,8 @@
+{
+  "label": "深度强化学习",
+  "position": 2,
+  "link": {
+    "type": "generated-index",
+    "description": "DQN、策略梯度、Actor-Critic、TRPO/PPO、SAC 等深度强化学习算法。"
+  }
+}

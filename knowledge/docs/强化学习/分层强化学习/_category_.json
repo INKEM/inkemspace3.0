@@ -1,0 +1,8 @@
+{
+  "label": "分层强化学习",
+  "position": 4,
+  "link": {
+    "type": "generated-index",
+    "description": "Option Framework、MAXQ、HIRO、HAC 等分层强化学习方法。"
+  }
+}

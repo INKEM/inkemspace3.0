@@ -70,6 +70,11 @@
       "icon": "icon-file-list"
     },
     {
+      "name": "知识库",
+      "link": "/knowledge/",
+      "icon": "icon-contacts-book"
+    },
+    {
       "name": "画廊",
       "link": "/gallery",
       "icon": "icon-t-box"

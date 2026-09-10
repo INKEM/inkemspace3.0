@@ -1,0 +1,8 @@
+{
+  "label": "强化学习基础",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "多臂赌博机、马尔可夫决策过程、动态规划、时序差分等强化学习基础主题。"
+  }
+}

@@ -1,0 +1,106 @@
+@import 'katex/dist/katex.min.css';
+
+/**
+ * 与博客(astro-gyoza)统一的外观风格。
+ * 色板对应博客 src/config.json 的 color 配置;
+ * 亮色页面背景与博客 AccentColorInjector 的混色算法保持一致:
+ *   light = rgb(250,250,250) 与 accent(#32ccbc) 按 5% 混合;
+ * 暗色正文与侧边栏按用户要求使用博客卡片的深灰表面色 #1c1c1e。
+ */
+
+@font-face {
+  font-family: 'Early Summer Serif';
+  /* 相对路径引用博客 public/fonts 下的字体文件,构建时由打包器处理 */
+  src: url('../../../public/fonts/EarlySummerSerif-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --ifm-color-primary: #32ccbc;
+  --ifm-color-primary-dark: #2fbeaf;
+  --ifm-color-primary-darker: #2cb3a5;
+  --ifm-color-primary-darkest: #27a194;
+  --ifm-color-primary-light: #40d0c1;
+  --ifm-color-primary-lighter: #4fd4c6;
+  --ifm-color-primary-lightest: #5ed8cb;
+
+  --ifm-background-color: #f0f8f7;
+  --ifm-background-surface-color: #ffffff;
+  --ifm-font-color-base: #373a3c;
+  --ifm-font-color-secondary: #71717a;
+
+  --ifm-font-family-base: 'Early Summer Serif', 'Noto Serif SC', 'Source Han Serif SC', serif;
+  --ifm-heading-font-family: 'Early Summer Serif', 'Noto Serif SC', 'Source Han Serif SC', serif;
+  --ifm-font-family-monospace: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+
+  --ifm-code-background: #f4f4f5;
+  --ifm-toc-border-color: #e4e4e7;
+
+  /* 与博客头部一致的 64px 高度和半透明毛玻璃质感 */
+  --ifm-navbar-height: 4rem;
+  --ifm-navbar-background-color: rgba(255, 255, 255, 0.85);
+  --ifm-navbar-shadow: 0 1px 0 0 #e4e4e7;
+
+  --ifm-footer-background-color: #f4f4f5;
+  --ifm-footer-title-color: #373a3c;
+  --ifm-footer-link-color: #71717a;
+
+  --ifm-global-radius: 0.6rem;
+  --ifm-button-border-radius: 0.6rem;
+}
+
+[data-theme='dark'] {
+  --ifm-color-primary: #90f7ec;
+  --ifm-color-primary-dark: #80f6e9;
+  --ifm-color-primary-darker: #73f5e7;
+  --ifm-color-primary-darkest: #5ef3e4;
+  --ifm-color-primary-light: #a1f8ef;
+  --ifm-color-primary-lighter: #b2f9f2;
+  --ifm-color-primary-lightest: #c4fbf5;
+
+  --ifm-background-color: #1c1c1e;
+  --ifm-background-surface-color: #27272a;
+  --ifm-font-color-base: #ffffff;
+  --ifm-font-color-secondary: #d1d5db;
+
+  --ifm-code-background: #27272a;
+  --ifm-toc-border-color: #3f3f46;
+
+  --ifm-navbar-background-color: rgba(28, 28, 30, 0.85);
+  --ifm-navbar-shadow: 0 1px 0 0 #3f3f46;
+
+  --ifm-footer-background-color: #1c1c1e;
+  --ifm-footer-title-color: #ffffff;
+  --ifm-footer-link-color: #d1d5db;
+}
+
+/* 暗色下主色很亮,实心主色按钮/徽标的文字改用深色保证对比度 */
+[data-theme='dark'] .button--primary,
+[data-theme='dark'] .badge--primary {
+  color: #1c1c1e;
+}
+
+.navbar {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* 亮色 = accent 底白字,暗色 = accent 30% 透明底,与博客 global.css 一致 */
+::selection {
+  background-color: #32ccbc;
+  color: white;
+}
+
+[data-theme='dark'] ::selection {
+  background-color: rgba(144, 247, 236, 0.3);
+}
+
+.theme-code-block {
+  border-radius: 0.75rem;
+}
+
+* {
+  scrollbar-width: thin;
+}

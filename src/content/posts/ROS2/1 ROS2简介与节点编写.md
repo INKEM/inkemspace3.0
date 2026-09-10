@@ -180,7 +180,7 @@ ros2 pkg create cpp_package_name --build-type ament_cmake --dependencies rclcpp
 
 在`cpp_package_name/src/`下创建`cpp_node_name.cpp`文件。
 
-**node_name.cpp**
+**cpp_node_name.cpp**
 
 一个最小节点的C++代码如下：
 

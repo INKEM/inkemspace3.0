@@ -5,8 +5,11 @@
   "scripts": {
     "prepare": "pnpm exec simple-git-hooks",
     "dev": "astro dev",
-    "build": "astro check && astro build && pagefind --site dist",
+    "build": "astro check && astro build && pagefind --site dist && pnpm docs:build && node scripts/copy-docs.js",
     "preview": "astro preview",
+    "docs": "pnpm --dir knowledge start",
+    "docs:start": "pnpm --dir knowledge start",
+    "docs:build": "pnpm --dir knowledge build",
     "astro": "astro",
     "lint": "prettier --write .",
     "new-friend": "node scripts/new-friend.js",

@@ -106,7 +106,13 @@ function DrawerContentImpl() {
     <ul className="mt-8 pb-8 overflow-y-auto overflow-x-hidden min-h-0">
       {menus.map((menu) => (
         <motion.li key={menu.name} variants={menuItemVariants}>
-          <a className="inline-flex p-2 space-x-4" href={menu.link} onClick={dismiss}>
+          {/* 知识库等独立子站不经过 swup 页面切换,使用整页跳转 */}
+          <a
+            className="inline-flex p-2 space-x-4"
+            href={menu.link}
+            data-no-swup={menu.link.startsWith('/knowledge') || undefined}
+            onClick={dismiss}
+          >
             <i className={clsx('iconfont', menu.icon)}></i>
             <span>{menu.name}</span>
           </a>

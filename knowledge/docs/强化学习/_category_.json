@@ -1,0 +1,8 @@
+{
+  "label": "强化学习",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "从基础到分层、基于模型等各子方向的强化学习系列笔记。"
+  }
+}
