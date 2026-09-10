@@ -65,7 +65,7 @@
     "simple-git-hooks": "^2.11.1"
   },
   "simple-git-hooks": {
-    "pre-commit": "pnpm exec lint-staged"
+    "pre-commit": "sh -c 'for d in \"$HOME\"/.nvm/versions/node/*/bin; do [ -d \"$d\" ] && PATH=\"$d:$PATH\"; done; export PATH; exec pnpm exec lint-staged'"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,astro,md,css,json}": "prettier --write"
