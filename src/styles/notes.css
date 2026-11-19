@@ -1,0 +1,60 @@
+.note-link,
+.note-tag {
+  border-radius: 0.25rem;
+  color: rgb(var(--color-accent));
+  text-decoration: none;
+}
+
+.note-link {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: baseline;
+  gap: 0.4em;
+  margin-inline-start: -0.35rem;
+  padding: 0.1em 0.35rem;
+}
+
+.note-link span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.note-link .iconfont {
+  flex: none;
+  color: rgb(var(--color-accent));
+  font-size: 0.75rem;
+}
+
+.note-title-link {
+  color: inherit;
+}
+
+.note-tag {
+  display: inline-block;
+  padding: 0.15em 0.5em;
+  background-color: rgb(var(--color-accent) / 0.08);
+}
+
+.note-link:focus-visible,
+.note-tag:focus-visible {
+  background-color: rgb(var(--color-accent) / 0.14);
+  color: rgb(var(--color-accent));
+}
+
+@media (hover: hover) {
+  .note-link:hover,
+  .note-tag:hover {
+    background-color: rgb(var(--color-accent) / 0.14);
+    color: rgb(var(--color-accent));
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .note-link:not(.note-title-link) .icon-arrow-right {
+    transition: transform 150ms ease-out;
+  }
+
+  .note-link:not(.note-title-link):hover .icon-arrow-right {
+    transform: translateX(0.15rem);
+  }
+}

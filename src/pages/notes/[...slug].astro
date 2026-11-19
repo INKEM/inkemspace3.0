@@ -1,34 +1,32 @@
 ---
-import type { CollectionEntry } from 'astro:content'
 import type { GetStaticPaths } from 'astro'
 import MarkdownLayout from '@/layouts/MarkdownLayout.astro'
 import MarkdownWrapper from '@/components/MarkdownWrapper.astro'
-import SectionBlock from '@/components/SectionBlock.astro'
-import { PostToc } from '@/components/post/PostToc'
-import { ReadingProgress } from '@/components/post/ReadingProgress'
-import { getCollection } from 'astro:content'
-import { slugify } from '@/utils/content'
+import PostNav from '@/components/post/PostNav.astro'
+import { getLegacyEssayPath, getNoteExcerpt, getSortedNotes, slugify } from '@/utils/content'
 import { Comments } from '@/components/comment'
 
 export const getStaticPaths = (async () => {
-  const notes = await getCollection('notes')
+  const notes = await getSortedNotes()
 
-  return notes.map((note) => ({
+  return notes.map((note, index) => ({
     params: { slug: note.slug },
-    props: { note },
+    props: {
+      note,
+      prev: notes[index - 1],
+      next: notes[index + 1],
+    },
   }))
 }) satisfies GetStaticPaths
 
-interface Props {
-  note: CollectionEntry<'notes'>
-}
-
-const { note } = Astro.props
+const { note, prev, next } = Astro.props
 const { headings, Content } = await note.render()
+const { title, tags, date, comments } = note.data
+const description = getNoteExcerpt(note)
+const legacyPath = getLegacyEssayPath(note.slug)
 
-const { title, tags, date } = note.data
-
-const formattedDate = new Date(date).toLocaleDateString('zh-CN', {
+const formattedDate = date.toLocaleDateString('zh-CN', {
+  timeZone: 'Asia/Shanghai',
   year: 'numeric',
   month: 'long',
   day: 'numeric',
@@ -37,62 +35,89 @@ const formattedDate = new Date(date).toLocaleDateString('zh-CN', {
 
 <MarkdownLayout
   title={title}
-  description={title}
+  description={description || title}
   mdTitle={title}
   mdDescription={tags.join(', ')}
   mdSlug={`/notes/${note.slug}`}
 >
-  <div class="max-w-[1100px] mx-auto px-4 md:px-8 py-16 grid lg:grid-cols-[1fr_260px] gap-8">
-    <div class="min-w-0">
-      <header class="mb-8">
-        <a href="/notes" class="inline-flex items-center text-accent hover:underline mb-4">
-          ← 返回杂记
-        </a>
-        <h1 class="text-4xl font-bold text-primary mb-4">{title}</h1>
-        <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-primary">
-          <time class="text-gray-600 dark:text-gray-400">
-            {formattedDate}
-          </time>
-          <div class="flex flex-wrap gap-2">
-            {
-              tags.map((tag: string) => (
-                <a
-                  href={`/notes/tags/${slugify(tag)}`}
-                  class="px-3 py-1 text-sm bg-accent/10 text-accent rounded hover:bg-accent/20 transition-colors"
-                >
-                  {tag}
-                </a>
-              ))
-            }
-          </div>
-        </div>
-      </header>
-
-      <MarkdownWrapper>
-        <div class="prose prose-lg max-w-3xl mx-auto break-words">
-          <Content />
-        </div>
-      </MarkdownWrapper>
-
-      <div class="mt-12 pt-8 border-t border-primary space-y-6">
-        <Comments />
+  <div class="note-reading max-w-[768px] mx-auto px-5 md:px-7 py-10 md:py-16" data-pagefind-body>
+    <header class="mb-9 border-b border-primary pb-6 md:mb-12 md:pb-8">
+      <a
+        href="/notes"
+        class="inline-block text-sm text-accent mb-5 underline underline-offset-4"
+        data-pagefind-ignore
+      >
+        ← 返回杂记
+      </a>
+      <h1
+        class="text-[clamp(2rem,4.8vw,2.75rem)] font-bold leading-tight break-words"
+        data-pagefind-meta="title"
+      >
+        {title}
+      </h1>
+      <div
+        class="mt-4 flex flex-wrap items-baseline gap-x-5 gap-y-2 text-sm text-secondary"
+        data-pagefind-ignore
+      >
+        <time datetime={date.toISOString()}>{formattedDate}</time>
+        {
+          tags.length > 0 && (
+            <ul class="flex flex-wrap gap-x-3 gap-y-1">
+              {tags.map((tag) => (
+                <li>
+                  <a
+                    class="hover:underline underline-offset-4"
+                    href={`/notes/tags/${slugify(tag)}`}
+                  >
+                    #{tag}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )
+        }
       </div>
-    </div>
+      {
+        note.data.summary && (
+          <p class="mt-4 text-lg leading-relaxed text-secondary">{note.data.summary}</p>
+        )
+      }
+    </header>
 
-    <div class="hidden lg:block" data-pagefind-ignore>
-      <aside class="sticky top-20">
-        <SectionBlock title="目录">
-          {
-            headings.length > 0 ? (
-              <PostToc headings={headings} client:idle />
-            ) : (
-              <p class="text-sm text-secondary">本文暂无目录</p>
-            )
-          }
-          <hr class="my-2 border-primary max-w-[100px]" />
-          <ReadingProgress client:idle />
-        </SectionBlock>
-      </aside>
+    {
+      headings.length >= 3 && (
+        <details
+          class="mb-7 rounded-lg border border-primary px-4 py-3 text-sm"
+          data-pagefind-ignore
+        >
+          <summary class="cursor-pointer font-bold">目录</summary>
+          <ul class="mt-3 space-y-2 break-words">
+            {headings.map((heading) => (
+              <li style={{ paddingInlineStart: `${Math.max(0, heading.depth - 2) * 0.75}rem` }}>
+                <a class="hover:underline underline-offset-4" href={`#${heading.slug}`}>
+                  {heading.text}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )
+    }
+
+    <MarkdownWrapper class="note-body">
+      <div class="max-w-none break-words">
+        <Content />
+      </div>
+    </MarkdownWrapper>
+
+    <div class="mt-12 pt-6 border-t border-primary space-y-7" data-pagefind-ignore>
+      <nav class="space-y-5" aria-label="继续阅读杂记">
+        <a class="text-sm text-secondary hover:underline underline-offset-4" href="/notes"
+          >← 全部杂记</a
+        >
+        {(prev || next) && <PostNav prev={prev} next={next} basePath="/notes" class="gap-4" />}
+      </nav>
+      {comments && <Comments legacyPath={legacyPath} />}
     </div>
   </div>
 </MarkdownLayout>

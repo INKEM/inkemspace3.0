@@ -6,7 +6,7 @@ comments: true
 
 👋这里是一杯为品，哈工大23级本硕博连读生。
 
-✍🏻致力于记录自己在具身智能领域的学习过程。
+✍🏻现在主要在这里写生活随笔，也记录科研与个人创作。过去写的具身智能和强化学习笔记可以在[归档](/archives)找到。
 
 ➡️更多关于我的故事，还请从博客深处寻找吧。
 
@@ -21,7 +21,7 @@ comments: true
 
 📬 联系邮箱：inkemspace@foxmail.com
 
-个人形象设计稿：
+图像作品和个人形象设计稿见[画廊](/gallery)。
 
 ![](https://inkem-1306784622.cos.accelerate.myqcloud.com/blog/pic/IP%E5%BD%A2%E8%B1%A1.jpg)
 

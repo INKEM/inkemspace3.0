@@ -2,19 +2,23 @@
 import type { CollectionEntry } from 'astro:content'
 
 interface Props {
-  prev?: CollectionEntry<'posts'>
-  next?: CollectionEntry<'posts'>
+  prev?: CollectionEntry<'posts' | 'notes'>
+  next?: CollectionEntry<'posts' | 'notes'>
+  basePath?: '/posts' | '/notes'
   class?: string
 }
 
-const { prev, next, class: className } = Astro.props
+const { prev, next, basePath = '/posts', class: className } = Astro.props
 ---
 
 <div class="grid grid-cols-2" class:list={[className]}>
   <div>
     {
       prev && (
-        <a class="flex items-baseline gap-2 hover:text-accent" href={`/posts/${prev.slug}`}>
+        <a
+          class="flex items-baseline gap-2 hover:underline underline-offset-4"
+          href={`${basePath}/${prev.slug}`}
+        >
           <i class="iconfont icon-arrow-left" />
           <span>{prev.data.title}</span>
         </a>
@@ -25,8 +29,8 @@ const { prev, next, class: className } = Astro.props
     {
       next && (
         <a
-          class="flex items-baseline justify-end gap-2 hover:text-accent"
-          href={`/posts/${next.slug}`}
+          class="flex items-baseline justify-end gap-2 hover:underline underline-offset-4"
+          href={`${basePath}/${next.slug}`}
         >
           <span>{next.data.title}</span>
           <i class="iconfont icon-arrow-right" />

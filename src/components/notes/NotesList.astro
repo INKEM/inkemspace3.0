@@ -7,31 +7,32 @@ interface Props {
 }
 
 const { notes } = Astro.props
+const yearFormatter = new Intl.DateTimeFormat('zh-CN', {
+  year: 'numeric',
+  timeZone: 'Asia/Shanghai',
+})
+const notesByYear = new Map<string, CollectionEntry<'notes'>[]>()
+
+for (const note of notes) {
+  const year = yearFormatter.format(note.data.date)
+  const group = notesByYear.get(year)
+  if (group) group.push(note)
+  else notesByYear.set(year, [note])
+}
 ---
 
-<div class="notes-timeline">
-  {notes.length === 0 ? (
-    <div class="text-center py-8 text-gray-500 dark:text-gray-400">
-      <p>暂无杂记内容</p>
-    </div>
-  ) : (
-    notes.map((note) => <NoteCard note={note} />)
-  )}
+<div class="space-y-9 md:space-y-14">
+  {notes.length === 0 && <p class="text-secondary">暂无杂记</p>}
+  {
+    Array.from(notesByYear, ([year, entries]) => (
+      <section class="grid md:grid-cols-[7rem_minmax(0,1fr)] md:gap-x-8">
+        <h2 class="mb-3 text-2xl font-bold text-accent md:mb-0 md:pt-5 md:text-3xl">{year}</h2>
+        <div class="divide-y divide-primary border-t border-primary">
+          {entries.map((note) => (
+            <NoteCard note={note} />
+          ))}
+        </div>
+      </section>
+    ))
+  }
 </div>
-
-<style is:global>
-  .notes-timeline {
-    position: relative;
-    padding-left: 1.25rem;
-  }
-
-  .notes-timeline::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0.375rem;
-    bottom: 0;
-    width: 2px;
-    background: rgb(var(--color-accent) / 0.25);
-  }
-</style>

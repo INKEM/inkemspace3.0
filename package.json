@@ -6,12 +6,8 @@
   "scripts": {
     "prepare": "pnpm exec simple-git-hooks",
     "dev": "astro dev",
-    "build": "astro check && astro build && pagefind --site dist && pnpm docs:install && pnpm docs:build && node scripts/copy-docs.js",
+    "build": "astro check && astro build && pagefind --site dist",
     "preview": "astro preview",
-    "docs": "pnpm --dir knowledge start",
-    "docs:start": "pnpm --dir knowledge start",
-    "docs:install": "pnpm --dir knowledge install --frozen-lockfile",
-    "docs:build": "pnpm --dir knowledge build",
     "astro": "astro",
     "lint": "prettier --write .",
     "new-friend": "node scripts/new-friend.js",

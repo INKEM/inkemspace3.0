@@ -1,0 +1,39 @@
+---
+import PageLayout from '@/layouts/PageLayout.astro'
+import NotesList from './NotesList.astro'
+import PostPagination from '@/components/post/PostPagination.astro'
+import Highlight from '@/components/Highlight.astro'
+import { getSortedNotesPaginated, getAllNoteTags } from '@/utils/content'
+import { notes } from '@/config.json'
+
+interface Props {
+  page?: number
+}
+
+const { page = 1 } = Astro.props
+const { data, totalPages } = await getSortedNotesPaginated(page, notes.perPage)
+const popularTags = (await getAllNoteTags()).sort((a, b) => b.count - a.count).slice(0, 5)
+const getPageUrl = (page: number) => (page === 1 ? '/notes' : `/notes/page/${page}`)
+---
+
+<PageLayout title={page === 1 ? '杂记' : `杂记 · 第 ${page} 页`}>
+  <div class="max-w-[1008px] px-5 md:px-6 py-10 md:py-16 mx-auto">
+    <header class="mb-10 space-y-3 md:mb-14">
+      <h1 class="text-4xl md:text-5xl font-bold"><Highlight>杂记</Highlight></h1>
+      <p class="text-secondary">生活随笔、科研手记和个人创作。</p>
+      {
+        popularTags.length > 0 && (
+          <nav aria-label="常用杂记标签" class="flex flex-wrap gap-2 pt-2 text-sm">
+            {popularTags.map((tag) => (
+              <a class="note-tag" href={`/notes/tags/${tag.slug}`}>
+                #{tag.name}
+              </a>
+            ))}
+          </nav>
+        )
+      }
+    </header>
+    <NotesList notes={data} />
+    {totalPages > 1 && <PostPagination current={page} total={totalPages} getPageUrl={getPageUrl} />}
+  </div>
+</PageLayout>

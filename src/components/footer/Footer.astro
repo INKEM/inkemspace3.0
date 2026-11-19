@@ -16,6 +16,9 @@ const wordCountStr = (wordCount / 1000).toFixed(1) + 'k'
 
 <footer class="relative z-1 py-8 px-4 md:px-8 border-t border-primary text-secondary text-sm">
   <div class="text-center space-y-2">
+    <nav aria-label="站点链接" class="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-4">
+      {footer.links.map(({ name, link }) => <Link href={link}>{name}</Link>)}
+    </nav>
     <div>
       Powered by
       <Link href="https://astro.build/">Astro</Link>

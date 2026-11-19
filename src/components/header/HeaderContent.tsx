@@ -90,16 +90,15 @@ function HeaderMenu({ isBgShow }: { isBgShow: boolean }) {
             href={menu.link}
             title={menu.name}
             icon={menu.icon}
-            isActive={pathName === menu.link}
+            isActive={
+              pathName === menu.link || (menu.link !== '/' && pathName.startsWith(`${menu.link}/`))
+            }
           />
         ))}
       </div>
     </nav>
   )
 }
-
-// 知识库等独立子站不经过 swup 页面切换,使用整页跳转
-const isStandaloneLink = (link: string) => link.startsWith('/knowledge')
 
 function HeaderMenuItem({
   href,
@@ -116,7 +115,6 @@ function HeaderMenuItem({
     <a
       className={clsx('relative block px-4 py-1.5', isActive ? 'text-accent' : 'hover:text-accent')}
       href={href}
-      data-no-swup={isStandaloneLink(href) || undefined}
     >
       <div className="flex space-x-2">
         {isActive && (

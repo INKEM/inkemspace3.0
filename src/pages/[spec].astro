@@ -12,6 +12,7 @@ import ProjectList from '@/components/ProjectList.astro'
 import { ReadingProgress } from '@/components/post/ReadingProgress'
 import { PostToc } from '@/components/post/PostToc'
 import { Comments } from '@/components/comment'
+import { SocialList } from '@/components/hero/SocialList'
 
 export const getStaticPaths = (async () => {
   const specList = await getCollection('spec')
@@ -80,6 +81,7 @@ const isMdContentEmpty = md.body.trim().length === 0
           <MarkdownWrapper>
             <Content />
           </MarkdownWrapper>
+          {md.slug === 'about' && <SocialList className="mt-8" client:idle />}
         </div>
         <div class="hidden lg:block" data-pagefind-ignore>
           <aside class="sticky top-20">

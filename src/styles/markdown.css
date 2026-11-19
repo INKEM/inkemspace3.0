@@ -27,7 +27,22 @@
 }
 
 .markdown a {
-  @apply font-normal text-accent hover:underline underline-offset-2;
+  @apply font-normal text-accent;
+}
+
+.markdown a:not(.heading-anchor, :has(img)) {
+  border-radius: 0.2em;
+  padding-inline: 0.15em;
+  background-color: rgb(var(--color-accent) / 0.1);
+  text-decoration: none;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+@media (hover: hover) {
+  .markdown a:not(.heading-anchor, :has(img)):hover {
+    background-color: rgb(var(--color-accent) / 0.18);
+  }
 }
 
 .markdown a + .icon-external-link {
@@ -177,4 +192,13 @@
 
 .markdown .mermaid svg {
   @apply max-w-full;
+}
+
+.note-reading .note-body {
+  font-size: clamp(1.0625rem, 1.2vw, 1.125rem);
+  line-height: 1.8;
+}
+
+.note-reading .note-body p {
+  margin-block-end: clamp(1.125rem, 2.4vw, 1.5rem);
 }

@@ -70,8 +70,10 @@ const notesCollection = defineCollection({
   type: 'content',
   schema: z.object({
     title: z.string(),
+    summary: z.string().optional(),
     tags: z.array(z.string()).default([]),
     date: z.date(),
+    comments: z.boolean().default(true),
     draft: z.boolean().default(false),
   }),
 })

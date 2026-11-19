@@ -1,4 +1,5 @@
-import { getCollection } from 'astro:content'
+import { getCollection, type CollectionEntry } from 'astro:content'
+import legacy from '@/legacy-redirects.json'
 
 // 获取所有文章
 async function getAllPosts() {
@@ -68,10 +69,8 @@ export async function getAllPostsWordCount() {
 
 export async function getTotalWordCount() {
   const postCount = await getAllPostsWordCount()
-  const allNotes = await getCollection('notes', ({ data }) => {
-    return import.meta.env.PROD ? data.draft !== true : true
-  })
-  return postCount + await countWordsFromRender(allNotes)
+  const allNotes = await getAllNotes()
+  return postCount + (await countWordsFromRender(allNotes))
 }
 
 // 转换为 URL 安全的 slug，删除点，空格转为短横线，大写转为小写
@@ -241,6 +240,12 @@ export async function getGalleryByAlbum(album: string) {
 
 // ==================== Notes Collection ====================
 
+const legacyEssayPaths = new Map(Object.entries(legacy.essays))
+
+export function getLegacyEssayPath(slug: string) {
+  return legacyEssayPaths.get(slug)
+}
+
 // 获取所有杂记
 async function getAllNotes() {
   const allNotes = await getCollection('notes', ({ data }) => {
@@ -308,8 +313,27 @@ export async function getNotesByTag(tag: string) {
   return allNotes.filter((note) => note.data.tags.some((t) => slugify(t) === slugify(tag)))
 }
 
-// 文本截断工具函数
-export function truncateText(text: string, length: number = 150): string {
-  if (text.length <= length) return text
-  return text.substring(0, length).trim() + '...'
+export function getNoteExcerpt(note: CollectionEntry<'notes'>) {
+  if (note.data.summary?.trim()) return note.data.summary.trim()
+
+  const paragraphs = note.body
+    .replace(/^```[^\n]*\n[\s\S]*?^```[^\n]*$/gm, '')
+    .replace(/^~~~[^\n]*\n[\s\S]*?^~~~[^\n]*$/gm, '')
+    .replace(/<!--[^]*?-->/g, '')
+    .split(/\r?\n[ \t]*\r?\n/)
+
+  for (const paragraph of paragraphs) {
+    const text = paragraph
+      .replace(/^ {0,3}(?:>[ \t]*)+/gm, '')
+      .replace(/^\s{0,3}#{1,6}\s+.*$/gm, '')
+      .replace(/!\[[^\]]*\]\([^\n]*?\)/g, '')
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+      .replace(/<?https?:\/\/[^\s>]+>?/g, '')
+      .replace(/[*_`]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+    if (text) return text.length > 150 ? `${text.slice(0, 150).trimEnd()}…` : text
+  }
+
+  return ''
 }

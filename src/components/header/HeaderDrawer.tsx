@@ -67,6 +67,7 @@ export function HeaderDrawer({ zIndex = 999 }: { zIndex?: number }) {
                 animate="visible"
                 exit="hidden"
               >
+                <Dialog.Title className="sr-only">站点导航</Dialog.Title>
                 <DrawerContext.Provider
                   value={{
                     dismiss() {
@@ -91,7 +92,7 @@ const TriggerButton = forwardRef<HTMLButtonElement>((props, ref) => {
       ref={ref}
       className="size-9 rounded-full shadow-lg shadow-zinc-800/5 border border-primary bg-white/50 dark:bg-zinc-800/50 backdrop-blur"
       type="button"
-      aria-label="Open menu"
+      aria-label="打开导航"
       {...props}
     >
       <i className="iconfont icon-menu"></i>
@@ -106,13 +107,7 @@ function DrawerContentImpl() {
     <ul className="mt-8 pb-8 overflow-y-auto overflow-x-hidden min-h-0">
       {menus.map((menu) => (
         <motion.li key={menu.name} variants={menuItemVariants}>
-          {/* 知识库等独立子站不经过 swup 页面切换,使用整页跳转 */}
-          <a
-            className="inline-flex p-2 space-x-4"
-            href={menu.link}
-            data-no-swup={menu.link.startsWith('/knowledge') || undefined}
-            onClick={dismiss}
-          >
+          <a className="inline-flex p-2 space-x-4" href={menu.link} onClick={dismiss}>
             <i className={clsx('iconfont', menu.icon)}></i>
             <span>{menu.name}</span>
           </a>

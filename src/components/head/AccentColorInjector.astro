@@ -14,26 +14,23 @@
   function injectColor() {
     const accentColor = pickRandomAccent()
 
-    const rootBgColor = {
-      light: chroma.mix('rgb(250,250,250)', accentColor.light, 0.05, 'rgb'),
-      dark: chroma.mix('rgb(0,2,18)', accentColor.dark, 0.12, 'rgb'),
-    }
-
     const $style = document.createElement('style')
     $style.textContent = `html {
   --color-accent: ${getRgbVal(chroma(accentColor.light))};
-  --color-bg-root: ${getRgbVal(rootBgColor.light)};
+  --color-bg-root: ${getRgbVal(chroma(themeColor.bg.root.light))};
   --color-bg-primary: ${getRgbVal(chroma(themeColor.bg.primary.light))};
   --color-bg-secondary: ${getRgbVal(chroma(themeColor.bg.secondary.light))};
+  --color-bg-feature: ${getRgbVal(chroma(themeColor.bg.feature.light))};
   --color-text-primary: ${getRgbVal(chroma(themeColor.text.primary.light))};
   --color-text-secondary: ${getRgbVal(chroma(themeColor.text.secondary.light))};
   --color-border-primary: ${getRgbVal(chroma(themeColor.border.primary.light))};
 }
 [data-theme='dark'] {
   --color-accent: ${getRgbVal(chroma(accentColor.dark))};
-  --color-bg-root: ${getRgbVal(rootBgColor.dark)};
+  --color-bg-root: ${getRgbVal(chroma(themeColor.bg.root.dark))};
   --color-bg-primary: ${getRgbVal(chroma(themeColor.bg.primary.dark))};
   --color-bg-secondary: ${getRgbVal(chroma(themeColor.bg.secondary.dark))};
+  --color-bg-feature: ${getRgbVal(chroma(themeColor.bg.feature.dark))};
   --color-text-primary: ${getRgbVal(chroma(themeColor.text.primary.dark))};
   --color-text-secondary: ${getRgbVal(chroma(themeColor.text.secondary.dark))};
   --color-border-primary: ${getRgbVal(chroma(themeColor.border.primary.dark))};

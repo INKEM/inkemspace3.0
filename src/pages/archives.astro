@@ -5,7 +5,7 @@ import PageLayout from '@/layouts/PageLayout.astro'
 import { getNewestPosts } from '@/utils/content'
 import { TimelineProgress } from '@/components/TimelineProgress'
 
-const oldestPosts = await getNewestPosts()
+const posts = await getNewestPosts()
 ---
 
 <PageLayout title="归档">
@@ -14,10 +14,13 @@ const oldestPosts = await getNewestPosts()
       <h1 class="text-4xl font-bold">
         <Highlight>归档</Highlight>
       </h1>
-      <p>共产出 {oldestPosts.length} 篇文章，再接再厉。</p>
+      <div class="flex flex-wrap items-baseline gap-x-4 gap-y-2">
+        <p class="text-secondary">{posts.length} 篇知识博客</p>
+        <a href="/posts" class="underline underline-offset-4 hover:text-secondary">按分类浏览 →</a>
+      </div>
       <hr class="w-[100px] border-primary" />
       <TimelineProgress client:load />
     </header>
-    <Timeline posts={oldestPosts} />
+    <Timeline posts={posts} />
   </div>
 </PageLayout>

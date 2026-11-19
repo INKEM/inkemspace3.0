@@ -1,9 +1,9 @@
 {
   "site": {
     "url": "https://inkem.space",
-    "title": "一杯为品",
-    "description": "一杯为品的博客，分享具身智能笔记和个人随笔。",
-    "keywords": "一杯为品,具身智能,强化学习,机器人,博客,个人随笔",
+    "title": "一杯为品的博客",
+    "description": "一杯为品的个人博客，记录生活、科研与个人创作。",
+    "keywords": "一杯为品,个人博客,生活随笔,杂记,科研,具身智能",
     "lang": "zh-CN",
     "favicon": "/favicon.ico",
     "appleTouchIcon": "/apple-touch-icon.png"
@@ -14,9 +14,9 @@
     "avatar": "https://inkem-1306784622.cos.accelerate.myqcloud.com/blog/pic/1772343485734.png"
   },
   "hero": {
-    "name": "一杯为品",
+    "name": "一杯为品的博客",
     "bio": "二杯三杯也无妨。",
-    "description": "🤖具身智能 | 🎹钢琴 | 🎨绘画 | ✒️写作 | 🧠INTP",
+    "description": "写生活里的事，也写科研中遇到的问题。",
     "socials": [
       {
         "name": "Github",
@@ -36,21 +36,48 @@
         "url": "mailto:inkemspace@foxmail.com",
         "color": "rgb(212, 70, 56)"
       }
-    ],
-    "yiyan": "不许平凡，不容悲欢。"
+    ]
   },
   "color": {
-    "accent": [{ "light": "#32CCBC", "dark": "#90F7EC" }],
+    "accent": [
+      {
+        "light": "#245F53",
+        "dark": "#9AD0B6"
+      }
+    ],
     "bg": {
-      "primary": { "light": "#ffffff", "dark": "#1c1c1e" },
-      "secondary": { "light": "#f4f4f5", "dark": "#27272a" }
+      "root": {
+        "light": "#F7F4EC",
+        "dark": "#1C231F"
+      },
+      "primary": {
+        "light": "#FCFAF5",
+        "dark": "#232B25"
+      },
+      "secondary": {
+        "light": "#EEE9DF",
+        "dark": "#2E3630"
+      },
+      "feature": {
+        "light": "#E3ECE6",
+        "dark": "#293C34"
+      }
     },
     "text": {
-      "primary": { "light": "#373a3c", "dark": "#ffffff" },
-      "secondary": { "light": "#71717a", "dark": "#d1d5db" }
+      "primary": {
+        "light": "#232925",
+        "dark": "#F2EFE6"
+      },
+      "secondary": {
+        "light": "#515D55",
+        "dark": "#BDC8BE"
+      }
     },
     "border": {
-      "primary": { "light": "#e4e4e7", "dark": "#3f3f46" }
+      "primary": {
+        "light": "#D4DAD1",
+        "dark": "#414B43"
+      }
     }
   },
   "menus": [
@@ -60,44 +87,19 @@
       "icon": "icon-pantone"
     },
     {
-      "name": "归档",
-      "link": "/archives",
-      "icon": "icon-archive"
-    },
-    {
-      "name": "文章",
-      "link": "/posts",
-      "icon": "icon-file-list"
-    },
-    {
-      "name": "知识库",
-      "link": "/knowledge/",
-      "icon": "icon-contacts-book"
-    },
-    {
-      "name": "画廊",
-      "link": "/gallery",
-      "icon": "icon-t-box"
-    },
-    {
       "name": "杂记",
       "link": "/notes",
       "icon": "icon-pen"
     },
     {
+      "name": "归档",
+      "link": "/archives",
+      "icon": "icon-archive"
+    },
+    {
       "name": "关于",
       "link": "/about",
       "icon": "icon-ghost"
-    },
-    {
-      "name": "友链",
-      "link": "/friends",
-      "icon": "icon-hearts"
-    },
-    {
-      "name": "开往",
-      "link": "https://www.travellings.cn/go.html",
-      "icon": "icon-rocket"
     }
   ],
   "posts": {
@@ -110,7 +112,21 @@
     "perPage": 12
   },
   "footer": {
-    "startTime": "2025-04-09T00:00:00Z"
+    "startTime": "2025-04-09T00:00:00Z",
+    "links": [
+      {
+        "name": "画廊",
+        "link": "/gallery"
+      },
+      {
+        "name": "友链",
+        "link": "/friends"
+      },
+      {
+        "name": "开往",
+        "link": "https://www.travellings.cn/go.html"
+      }
+    ]
   },
   "waline": {
     "serverURL": "https://waline.inkem.space"

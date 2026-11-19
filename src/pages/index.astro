@@ -1,0 +1,121 @@
+---
+import PageLayout from '@/layouts/PageLayout.astro'
+import NoteCard from '@/components/notes/NoteCard.astro'
+import { getNoteExcerpt, getSortedNotes } from '@/utils/content'
+import { hero } from '@/config.json'
+
+const notes = await getSortedNotes()
+const [featured, ...otherNotes] = notes
+const recent = otherNotes.slice(0, 3)
+const selected = ['march-rhapsody', '2025-in-review'].flatMap((slug) =>
+  notes.filter((note) => note.slug === slug),
+)
+const photoSource = notes.find((note) => note.slug === '4')
+const featuredDate = featured?.data.date.toLocaleDateString('zh-CN', {
+  timeZone: 'Asia/Shanghai',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+})
+const featuredExcerpt = featured ? getNoteExcerpt(featured) : ''
+---
+
+<PageLayout>
+  <div class="home-shell">
+    <header class="home-heading">
+      <h1>{hero.name}</h1>
+      <p>{hero.bio}</p>
+    </header>
+
+    {
+      featured ? (
+        <section
+          class="home-feature"
+          class:list={{ 'has-photo': photoSource }}
+          aria-labelledby="featured-title"
+        >
+          <div class="feature-copy">
+            <time datetime={featured.data.date.toISOString()}>{featuredDate}</time>
+            <h2 id="featured-title">
+              <a class="note-link note-title-link" href={`/notes/${featured.slug}`}>
+                <span>{featured.data.title}</span>
+                <i class="iconfont icon-arrow-right" aria-hidden="true" />
+              </a>
+            </h2>
+            {featuredExcerpt && <p class="line-clamp-3">{featuredExcerpt}</p>}
+            <a class="read-feature" href={`/notes/${featured.slug}`}>
+              阅读全文 <i class="iconfont icon-arrow-right" aria-hidden="true" />
+            </a>
+          </div>
+
+          {photoSource && (
+            <figure class="feature-photo">
+              <img
+                src="/images/harbin-first-graupel.webp"
+                width="1280"
+                height="960"
+                fetchpriority="high"
+                decoding="async"
+                alt="阴云下，霰粒飘落在哈尔滨的街道和建筑前"
+              />
+              <figcaption>
+                <a class="note-link" href={`/notes/${photoSource.slug}`}>
+                  <span>哈尔滨的第一场霰</span>
+                  <i class="iconfont icon-arrow-right" aria-hidden="true" />
+                </a>
+                <time datetime="2026-10-21">2026 年 10 月 21 日</time>
+              </figcaption>
+            </figure>
+          )}
+        </section>
+      ) : (
+        <p class="text-secondary">暂无杂记</p>
+      )
+    }
+
+    {
+      recent.length > 0 && (
+        <section class="home-section" aria-labelledby="recent-notes">
+          <header class="section-heading">
+            <h2 id="recent-notes">近期杂记</h2>
+            <a class="note-link" href="/notes">
+              <span>全部杂记</span>
+              <i class="iconfont icon-arrow-right" aria-hidden="true" />
+            </a>
+          </header>
+          <div class="divide-y divide-primary border-b border-primary">
+            {recent.map((note) => (
+              <NoteCard note={note} showExcerpt={false} showTags={false} showYear />
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    {
+      selected.length > 0 && (
+        <section class="home-section" aria-labelledby="selected-notes">
+          <header class="section-heading">
+            <h2 id="selected-notes">杂记选读</h2>
+          </header>
+          <div class="selected-notes">
+            {selected.map((note) => {
+              const excerpt = getNoteExcerpt(note)
+              return (
+                <article>
+                  <h3>
+                    <a class="note-link note-title-link" href={`/notes/${note.slug}`}>
+                      <span>{note.data.title}</span>
+                      <i class="iconfont icon-arrow-right" aria-hidden="true" />
+                    </a>
+                  </h3>
+                  {excerpt && <p>{excerpt}</p>}
+                </article>
+              )
+            })}
+          </div>
+        </section>
+      )
+    }
+  </div>
+</PageLayout>

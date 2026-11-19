@@ -1,6 +1,8 @@
 @import './iconfont.css';
 @import './shiki.css';
 @import './markdown.css';
+@import './home.css';
+@import './notes.css';
 @import './signature.css';
 @import './swup.css';
 @import './swup-safe.css';
@@ -31,11 +33,12 @@
 
 ::selection {
   background-color: theme('colors.accent');
-  color: white;
+  color: theme('backgroundColor.root');
 }
 
-[data-theme='dark'] ::selection {
-  background-color: theme('colors.accent/0.3');
+:focus-visible {
+  outline: 2px solid theme('colors.accent');
+  outline-offset: 3px;
 }
 
 html {
